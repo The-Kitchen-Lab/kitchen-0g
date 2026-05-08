@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>The Kitchen × 0G — Live Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;700;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#080808; --fg:#ECECEC;
+      --dim:rgba(236,236,236,.45); --faint:rgba(236,236,236,.15);
+      --acc:#F5C842; --acc-dim:rgba(245,200,66,.15); --acc-border:rgba(245,200,66,.3);
+      --border:rgba(236,236,236,.07); --border-bright:rgba(236,236,236,.12);
+      --card:#0E0E0E; --card2:#111;
+      --green:#4ADE80; --red:#F87171; --blue:#60A5FA;
+      --mono:'Geist Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:var(--bg);color:var(--fg);height:100%;overflow:hidden}
+    body{font-family:'Geist',sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+    ::selection{background:var(--acc);color:#080808}
+
+    /* ── CANVAS BG ── */
+    #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35}
+
+    /* ── HEADER ── */
+    header{
+      position:relative;z-index:10;
+      padding:16px 28px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      flex-shrink:0;
+    }
+    .logo{
+      display:flex;align-items:center;gap:12px;
+    }
+    .logo-mark{
+      width:28px;height:28px;
+      background:var(--acc);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .logo-mark svg{width:16px;height:16px;fill:#080808}
+    .logo-text{
+      font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg);
+    }
+    .logo-text span{color:var(--acc)}
+    .header-right{
+      display:flex;align-items:center;gap:20px;
+    }
+    .status-pill{
+      display:flex;align-items:center;gap:6px;
+      font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--dim);
+    }
+    .status-dot{
+      width:6px;height:6px;border-radius:50%;background:var(--dim);
+      transition:background .3s;
+    }
+    .status-dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .status-dot.running{
+      background:var(--acc);
+      animation:pulse-dot 1s ease-in-out infinite;
+    }
+    @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+    .run-btn{
+      font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+      background:var(--acc);color:#080808;border:none;
+      padding:8px 18px;cursor:pointer;
+      font-weight:500;
+      transition:opacity .2s,transform .1s;
+    }
+    .run-btn:hover{opacity:.85}
+    .run-btn:active{transform:scale(.97)}
+    .run-btn:disabled{opacity:.35;cursor:not-allowed}
+
+    /* ── MAIN GRID ── */
+    .grid{
+      position:relative;z-index:10;
+      flex:1;overflow:hidden;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:0;
+      padding:0;
+    }
+    .panel{
+      border-right:1px solid var(--border);
+      display:flex;flex-direction:column;
+      overflow:hidden;
+    }
+    .panel:last-child{border-right:none}
+    .panel-header{
+      padding:14px 20px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      flex-shrink:0;
+    }
+    .panel-title{
+      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--dim);display:flex;align-items:center;gap:8px;
+    }
+    .panel-title .icon{
+      width:14px;height:14px;opacity:.6;
+    }
+    .panel-count{
+      font-family:var(--mono);font-size:10px;color:var(--faint);
+      background:rgba(236,236,236,.06);padding:2px 7px;
+    }
+    .panel-body{
+      flex:1;overflow-y:auto;padding:0;
+      scroll-behavior:smooth;
+    }
+    .panel-body::-webkit-scrollbar{width:3px}
+    .panel-body::-webkit-scrollbar-track{background:transparent}
+    .panel-body::-webkit-scrollbar-thumb{background:var(--border-bright)}
+
+    /* ── LOG ENTRIES ── */
+    .log-entry{
+      padding:10px 20px;
+      border-bottom:1px solid var(--border);
+      font-family:var(--mono);font-size:11px;line-height:1.6;
+      color:var(--dim);
+      transition:background .15s;
+      animation:fade-in .2s ease-out;
+    }
+    .log-entry:hover{background:rgba(236,236,236,.02)}
+    @keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .log-entry .ts{
+      font-size:9px;color:var(--faint);letter-spacing:.08em;display:block;margin-bottom:2px;
+    }
+    .log-entry .msg{white-space:pre-wrap;word-break:break-all}
+    .log-entry.step .msg{color:var(--fg)}
+    .log-entry.agent-xeon .agent-tag{color:#F5C842}
+    .log-entry.agent-nova .agent-tag{color:#60A5FA}
+    .log-entry.agent-embr .agent-tag{color:#C084FC}
+    .log-entry.done .msg{color:var(--green)}
+    .log-entry.error .msg{color:var(--red)}
+
+    /* ── STORAGE CARDS ── */
+    .storage-card{
+      padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      animation:fade-in .25s ease-out;
+    }
+    .storage-card:hover{background:rgba(236,236,236,.02)}
+    .storage-card .agent-id{
+      font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--acc);margin-bottom:6px;
+    }
+    .storage-card .hash{
+      font-family:var(--mono);font-size:10px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:6px;
+    }
+    .storage-card .hash .label{color:var(--dim);font-size:9px}
+    .storage-card .meta{
+      font-family:var(--mono);font-size:9px;color:var(--faint);
+      display:flex;gap:12px;
+    }
+
+    /* ── DA CARDS ── */
+    .da-card{
+      padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      animation:fade-in .25s ease-out;
+    }
+    .da-card:hover{background:rgba(236,236,236,.02)}
+    .da-card .da-label{
+      font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;
+    }
+    .da-card .da-label .confirmed{
+      background:rgba(74,222,128,.1);color:var(--green);
+      padding:1px 6px;font-size:8px;letter-spacing:.1em;
+    }
+    .da-card .tx-hash{
+      font-family:var(--mono);font-size:10px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:8px;
+    }
+    .da-card .explorer-link{
+      font-family:var(--mono);font-size:9px;
+      color:var(--acc);text-decoration:none;
+      border-bottom:1px solid var(--acc-border);
+      padding-bottom:1px;
+      transition:color .2s;
+      word-break:break-all;
+    }
+    .da-card .explorer-link:hover{color:#fff}
+    .da-card .data-root{
+      font-family:var(--mono);font-size:9px;color:var(--faint);
+      margin-top:6px;word-break:break-all;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:10px;padding:40px 20px;
+    }
+    .empty .empty-icon{
+      width:32px;height:32px;opacity:.2;
+    }
+    .empty p{
+      font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--faint);text-align:center;line-height:1.8;
+    }
+
+    /* ── FOOTER ── */
+    footer{
+      position:relative;z-index:10;
+      padding:10px 28px;
+      border-top:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      flex-shrink:0;
+    }
+    .footer-left{
+      font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--faint);
+    }
+    .chain-badges{
+      display:flex;gap:12px;
+    }
+    .chain-badge{
+      font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--faint);display:flex;align-items:center;gap:5px;
+    }
+    .chain-badge .dot{width:4px;height:4px;border-radius:50%;background:var(--faint)}
+    .chain-badge.active{color:var(--dim)}
+    .chain-badge.active .dot{background:var(--green)}
+
+    /* ── ARTIFACT MODAL ── */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(8,8,8,.92);z-index:200;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;transition:opacity .2s;
+    }
+    .modal-overlay.open{opacity:1;pointer-events:auto}
+    .modal{
+      width:min(700px,90vw);max-height:80vh;
+      background:var(--card);border:1px solid var(--border-bright);
+      display:flex;flex-direction:column;
+      transform:translateY(8px);transition:transform .2s;
+    }
+    .modal-overlay.open .modal{transform:none}
+    .modal-header{
+      padding:16px 20px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .modal-title{
+      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--dim);
+    }
+    .modal-close{
+      background:none;border:none;color:var(--faint);cursor:pointer;
+      font-family:var(--mono);font-size:14px;line-height:1;padding:0;
+      transition:color .15s;
+    }
+    .modal-close:hover{color:var(--fg)}
+    .modal-body{
+      flex:1;overflow-y:auto;padding:20px;
+    }
+    .modal-body::-webkit-scrollbar{width:3px}
+    .modal-body::-webkit-scrollbar-thumb{background:var(--border-bright)}
+    .artifact-json{
+      font-family:var(--mono);font-size:11px;line-height:1.7;
+      color:var(--dim);white-space:pre-wrap;word-break:break-all;
+    }
+    .artifact-json .key{color:var(--acc)}
+    .artifact-btn{
+      font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+      background:transparent;border:1px solid var(--border-bright);color:var(--dim);
+      padding:6px 14px;cursor:pointer;transition:border-color .2s,color .2s;
+    }
+    .artifact-btn:hover{border-color:var(--acc-border);color:var(--fg)}
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M8 1L1 5v6l7 4 7-4V5L8 1zM8 3l5 2.9V10L8 13l-5-2.9V5.9L8 3z"/></svg>
+    </div>
+    <span class="logo-text">THE KITCHEN <span>×</span> 0G</span>
+  </div>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">IDLE</span>
+    </div>
+    <button class="artifact-btn" id="artifact-btn" style="display:none">VIEW ARTIFACT</button>
+    <button class="run-btn" id="run-btn">RUN PIPELINE</button>
+  </div>
+</header>
+
+<!-- PANELS -->
+<div class="grid">
+
+  <!-- Panel 1: Agent Log -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="12" height="12" rx="1"/>
+          <path d="M5 5h6M5 8h4M5 11h3"/>
+        </svg>
+        Agent Log
+      </div>
+      <span class="panel-count" id="log-count">0</span>
+    </div>
+    <div class="panel-body" id="log-body">
+      <div class="empty" id="log-empty">
+        <svg class="empty-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="4" y="4" width="24" height="24" rx="2"/>
+          <path d="M10 11h12M10 16h8M10 21h6"/>
+        </svg>
+        <p>Waiting for<br/>pipeline run</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 2: 0G Storage Writes -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <ellipse cx="8" cy="4" rx="5" ry="2"/>
+          <path d="M3 4v4c0 1.1 2.2 2 5 2s5-.9 5-2V4"/>
+          <path d="M3 8v4c0 1.1 2.2 2 5 2s5-.9 5-2V8"/>
+        </svg>
+        0G Storage Writes
+      </div>
+      <span class="panel-count" id="storage-count">0</span>
+    </div>
+    <div class="panel-body" id="storage-body">
+      <div class="empty" id="storage-empty">
+        <svg class="empty-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <ellipse cx="16" cy="8" rx="10" ry="4"/>
+          <path d="M6 8v8c0 2.2 4.5 4 10 4s10-1.8 10-4V8"/>
+          <path d="M6 16v8c0 2.2 4.5 4 10 4s10-1.8 10-4v-8"/>
+        </svg>
+        <p>No storage writes<br/>yet</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 3: DA Audit Trail -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M8 2l4 4-4 4-4-4 4-4z"/>
+          <path d="M4 10l-2 2 2 2 2-2-2-2zM12 10l-2 2 2 2 2-2-2-2z"/>
+        </svg>
+        DA Audit Trail
+      </div>
+      <span class="panel-count" id="da-count">0</span>
+    </div>
+    <div class="panel-body" id="da-body">
+      <div class="empty" id="da-empty">
+        <svg class="empty-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M16 4l8 8-8 8-8-8 8-8z"/>
+          <path d="M8 20l-4 4 4 4 4-4-4-4zM24 20l-4 4 4 4 4-4-4-4z"/>
+        </svg>
+        <p>No DA commitments<br/>yet</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">Istanbul · May 2026 · 0G Galileo Testnet</div>
+  <div class="chain-badges">
+    <div class="chain-badge" id="badge-storage">
+      <div class="dot"></div>
+      Storage
+    </div>
+    <div class="chain-badge" id="badge-compute">
+      <div class="dot"></div>
+      Compute
+    </div>
+    <div class="chain-badge" id="badge-da">
+      <div class="dot"></div>
+      DA
+    </div>
+  </div>
+</footer>
+
+<!-- ARTIFACT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Pipeline Artifact</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <pre class="artifact-json" id="artifact-json"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Dot grid canvas ───────────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    draw();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const spacing = 36;
+    ctx.fillStyle = 'rgba(236,236,236,0.18)';
+    for (let x = spacing / 2; x < w; x += spacing) {
+      for (let y = spacing / 2; y < h; y += spacing) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let logCount = 0, storageCount = 0, daCount = 0;
+let isRunning = false;
+let latestArtifact = null;
+let eventSource = null;
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const runBtn = document.getElementById('run-btn');
+const artifactBtn = document.getElementById('artifact-btn');
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+const logBody = document.getElementById('log-body');
+const logEmpty = document.getElementById('log-empty');
+const storageBody = document.getElementById('storage-body');
+const storageEmpty = document.getElementById('storage-empty');
+const daBody = document.getElementById('da-body');
+const daEmpty = document.getElementById('da-empty');
+const logCountEl = document.getElementById('log-count');
+const storageCountEl = document.getElementById('storage-count');
+const daCountEl = document.getElementById('da-count');
+const badgeStorage = document.getElementById('badge-storage');
+const badgeCompute = document.getElementById('badge-compute');
+const badgeDA = document.getElementById('badge-da');
+const modalOverlay = document.getElementById('modal-overlay');
+const modalClose = document.getElementById('modal-close');
+const artifactJson = document.getElementById('artifact-json');
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function ts() {
+  return new Date().toLocaleTimeString('en-US', { hour12: false });
+}
+
+function scrollToBottom(el) {
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStatus(state) {
+  statusDot.className = 'status-dot' + (state === 'running' ? ' running' : state === 'live' ? ' live' : '');
+  statusText.textContent = state.toUpperCase();
+}
+
+// ── Log panel ─────────────────────────────────────────────────────────────────
+function addLog(msg, cls = '') {
+  if (logCount === 0) logEmpty.style.display = 'none';
+  logCount++;
+  logCountEl.textContent = logCount;
+
+  const entry = document.createElement('div');
+  entry.className = 'log-entry ' + cls;
+
+  // Detect agent prefix
+  let agentClass = '';
+  if (msg.includes('[XEON]') || msg.includes('XEON')) agentClass = 'agent-xeon';
+  else if (msg.includes('[NOVA]') || msg.includes('NOVA')) agentClass = 'agent-nova';
+  else if (msg.includes('[EMBR]') || msg.includes('EMBR')) agentClass = 'agent-embr';
+
+  const isStep = msg.startsWith('──') || msg.startsWith('╔') || msg.startsWith('║') || msg.startsWith('╚');
+  if (isStep) agentClass += ' step';
+
+  const isDone = msg.includes('PIPELINE COMPLETE') || msg.includes('Built quiet');
+  if (isDone) agentClass += ' done';
+
+  entry.className = 'log-entry ' + agentClass;
+  entry.innerHTML = `<span class="ts">${ts()}</span><span class="msg">${escHtml(msg)}</span>`;
+  logBody.appendChild(entry);
+  scrollToBottom(logBody);
+}
+
+// ── Storage panel ─────────────────────────────────────────────────────────────
+function addStorage(agentId, hash, action) {
+  if (storageCount === 0) storageEmpty.style.display = 'none';
+  storageCount++;
+  storageCountEl.textContent = storageCount;
+  badgeStorage.className = 'chain-badge active';
+
+  const card = document.createElement('div');
+  card.className = 'storage-card';
+  card.innerHTML = `
+    <div class="agent-id">${escHtml(agentId)} — ${escHtml(action)}</div>
+    <div class="hash"><span class="label">root_hash  </span>${escHtml(hash)}</div>
+    <div class="meta"><span>${ts()}</span><span>0G Testnet</span></div>
+  `;
+  storageBody.appendChild(card);
+  scrollToBottom(storageBody);
+}
+
+// ── DA panel ──────────────────────────────────────────────────────────────────
+function addDA(agentId, txHash, explorerUrl) {
+  if (daCount === 0) daEmpty.style.display = 'none';
+  daCount++;
+  daCountEl.textContent = daCount;
+  badgeDA.className = 'chain-badge active';
+
+  const card = document.createElement('div');
+  card.className = 'da-card';
+  card.innerHTML = `
+    <div class="da-label">
+      ${escHtml(agentId)}
+      <span class="confirmed">CONFIRMED</span>
+    </div>
+    <div class="tx-hash">${escHtml(txHash)}</div>
+    <a class="explorer-link" href="${escHtml(explorerUrl)}" target="_blank" rel="noopener">${escHtml(explorerUrl)}</a>
+    <div class="data-root">DA Entry committed on 0G Galileo</div>
+  `;
+  daBody.appendChild(card);
+  scrollToBottom(daBody);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Line parser ───────────────────────────────────────────────────────────────
+let pendingAgent = null;
+
+function parseLine(raw) {
+  const line = raw.trim();
+  if (!line) return;
+
+  // Track which agent context we're in
+  if (line.includes('[XEON]')) pendingAgent = 'XEON';
+  else if (line.includes('[NOVA]')) pendingAgent = 'NOVA';
+  else if (line.includes('[EMBR]')) pendingAgent = 'EMBR';
+
+  // Detect storage hash
+  if (line.includes('storage_hash:') || line.includes('stateHash:')) {
+    const match = line.match(/[0-9a-fx]{10,}/i);
+    if (match) {
+      const agent = pendingAgent || 'AGENT';
+      const action = line.includes('stateHash') ? 'write' : 'write';
+      addStorage(agent, match[0], action);
+    }
+  }
+
+  // Detect DA commit
+  if (line.includes('da_tx:')) {
+    const txMatch = line.match(/0x[0-9a-fA-F]{10,}/);
+    if (txMatch) {
+      const url = 'https://chainscan-galileo.0g.ai/tx/' + txMatch[0];
+      addDA(pendingAgent || 'XEON', txMatch[0], url);
+      badgeDA.className = 'chain-badge active';
+    }
+  }
+
+  // Detect verify URL with full hash
+  if (line.includes('verify:') && line.includes('chainscan')) {
+    const urlMatch = line.match(/https?:\/\/\S+/);
+    if (urlMatch && daCount > 0) {
+      // Update last DA card explorer link
+      const links = daBody.querySelectorAll('.explorer-link');
+      const last = links[links.length - 1];
+      if (last) {
+        last.href = urlMatch[0];
+        last.textContent = urlMatch[0];
+      }
+    }
+  }
+
+  // Detect compute
+  if (line.includes('via_0g_compute:')) {
+    const live = line.includes('true');
+    badgeCompute.className = 'chain-badge' + (live ? ' active' : '');
+  }
+
+  // Done
+  if (line.includes('PIPELINE COMPLETE') || line.includes('Built quiet')) {
+    setStatus('live');
+    runBtn.disabled = false;
+    isRunning = false;
+    loadLatest();
+  }
+
+  addLog(line);
+}
+
+// ── Load latest artifact ──────────────────────────────────────────────────────
+async function loadLatest() {
+  try {
+    const res = await fetch('/api/latest');
+    const data = await res.json();
+    if (data) {
+      latestArtifact = data;
+      artifactBtn.style.display = '';
+
+      // Populate panels from artifact if empty
+      if (storageCount === 0 && data.on_chain && data.on_chain.storage) {
+        const s = data.on_chain.storage;
+        for (const [key, hash] of Object.entries(s)) {
+          if (hash) addStorage(key.split('_')[0].toUpperCase(), hash, key);
+        }
+      }
+      if (daCount === 0 && data.on_chain && data.on_chain.da) {
+        const d = data.on_chain.da;
+        const base = d.explorer_base || 'https://chainscan-galileo.0g.ai/tx/';
+        for (const [key, tx] of Object.entries(d)) {
+          if (tx && key.endsWith('_tx') && tx.startsWith('0x')) {
+            addDA(key.replace('_tx','').toUpperCase(), tx, base + tx);
+          }
+        }
+      }
+
+      setStatus('live');
+    }
+  } catch (e) {}
+}
+
+// ── SSE ───────────────────────────────────────────────────────────────────────
+function connectSSE() {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource('/api/stream');
+  eventSource.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data === '__DONE__') {
+      setStatus('live');
+      runBtn.disabled = false;
+      isRunning = false;
+      loadLatest();
+    } else {
+      parseLine(data);
+    }
+  };
+}
+
+// ── Run pipeline ──────────────────────────────────────────────────────────────
+runBtn.addEventListener('click', async () => {
+  if (isRunning) return;
+  isRunning = true;
+  runBtn.disabled = true;
+  setStatus('running');
+
+  // Reset panels
+  logCount = 0; storageCount = 0; daCount = 0;
+  logCountEl.textContent = '0'; storageCountEl.textContent = '0'; daCountEl.textContent = '0';
+  logBody.innerHTML = ''; storageBody.innerHTML = ''; daBody.innerHTML = '';
+  logEmpty.style.display = ''; storageEmpty.style.display = ''; daEmpty.style.display = '';
+  logBody.appendChild(logEmpty);
+  storageBody.appendChild(storageEmpty);
+  daBody.appendChild(daEmpty);
+  pendingAgent = null;
+
+  // Connect SSE first
+  connectSSE();
+
+  // Trigger run
+  await fetch('/api/run', { method: 'POST' }).catch(() => {});
+  addLog('▶ Pipeline started…', 'step');
+});
+
+// ── Artifact modal ────────────────────────────────────────────────────────────
+artifactBtn.addEventListener('click', () => {
+  if (!latestArtifact) return;
+  const json = JSON.stringify(latestArtifact, null, 2);
+  artifactJson.textContent = json;
+  modalOverlay.classList.add('open');
+});
+modalClose.addEventListener('click', () => modalOverlay.classList.remove('open'));
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadLatest();
+connectSSE();
+</script>
+</body>
+</html>
