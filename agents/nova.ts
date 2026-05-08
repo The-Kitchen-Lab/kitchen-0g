@@ -1,15 +1,16 @@
 /**
  * NOVA — AI/ML Lead
  *
- * Handles market analysis and inference tasks. In Phase 3, inference
- * is routed through 0G Compute. For now, uses a local stub that will
- * be swapped in Phase 3.
+ * Handles market analysis and inference tasks.
+ * Inference is routed through 0G Compute Network (Phase 3).
+ * Falls back to stub if ledger balance < 3 OG.
  *
- * State is persisted to 0G Storage after each inference run.
+ * State is persisted to 0G Storage after each inference run (Phase 2).
  */
 
 import { v4 as uuidv4 } from "uuid";
 import { createStorageClient, AgentState } from "../integrations/storage/client.js";
+import { createComputeClient } from "../integrations/compute/nova_inference.js";
 
 export interface NovaInferenceRequest {
   prompt: string;
@@ -20,13 +21,15 @@ export interface NovaInferenceRequest {
 export interface NovaInferenceResult {
   completion: string;
   model: string;
-  compute_job_id: string | null;  // populated in Phase 3 when 0G Compute is live
+  compute_job_id: string | null;
+  via_0g_compute: boolean;
   stateHash: string;
 }
 
 export class NovaAgent {
   readonly id = "NOVA";
   private storage = createStorageClient();
+  private compute = createComputeClient();
   private sessionId = uuidv4();
   private state: AgentState | null = null;
 
@@ -45,24 +48,26 @@ export class NovaAgent {
   }
 
   /**
-   * Run market analysis inference.
-   * Phase 3: this call routes through 0G Compute.
-   * Phase 2: local stub, returns hardcoded analysis.
+   * Run market analysis inference via 0G Compute.
+   * Automatically falls back to stub when ledger balance is insufficient.
    */
   async runInference(req: NovaInferenceRequest): Promise<NovaInferenceResult> {
-    const model = req.model ?? process.env.ZG_COMPUTE_MODEL ?? "llama-3.1-8b-instruct";
-    console.log(`\n[NOVA] Running inference — model: ${model}`);
+    console.log(`\n[NOVA] Running inference`);
     console.log(`[NOVA] Prompt: ${req.prompt.slice(0, 80)}...`);
 
-    // Phase 3 will replace this stub with 0G Compute call
-    const completion = await this.runLocalStub(req.prompt);
-    const compute_job_id: string | null = null;  // Phase 3: populated from 0G
+    const result = await this.compute.runInference({
+      prompt: req.prompt,
+      systemPrompt: "You are NOVA, the AI/ML Lead in The Kitchen autonomous agent lab. Analyze market fit with precision. Be concise.",
+      model: req.model,
+      maxTokens: 600,
+    });
 
-    console.log(`[NOVA] Inference complete`);
-    if (compute_job_id) {
-      console.log(`[NOVA] 0G Compute job ID: ${compute_job_id}`);
+    if (result.via_0g_compute) {
+      console.log(`[NOVA] ✅ 0G Compute inference done`);
+      console.log(`[NOVA]    job_id:   ${result.compute_job_id}`);
+      console.log(`[NOVA]    provider: ${result.provider_address}`);
     } else {
-      console.log(`[NOVA] (local stub — 0G Compute integration in Phase 3)`);
+      console.log(`[NOVA] ⚡ Stub inference done (fund 3 OG to activate 0G Compute)`);
     }
 
     // Persist state to 0G Storage
@@ -70,41 +75,25 @@ export class NovaAgent {
       agent_id: this.id,
       timestamp: new Date().toISOString(),
       task_context: req.prompt.slice(0, 200),
-      last_action: `inference(${model})`,
+      last_action: `inference(${result.model}, via_0g=${result.via_0g_compute})`,
       next_planned_action: "await XEON dispatch for next task",
       session_id: this.sessionId,
-      completion: completion.slice(0, 500),
-      compute_job_id,
+      completion: result.completion.slice(0, 500),
+      compute_job_id: result.compute_job_id,
+      via_0g_compute: result.via_0g_compute,
+      provider_address: result.provider_address,
     };
 
     const { rootHash } = await this.storage.writeAgentState(this.id, newState);
     this.state = newState;
 
-    return { completion, model, compute_job_id, stateHash: rootHash };
-  }
-
-  private async runLocalStub(prompt: string): Promise<string> {
-    // Simulate inference latency
-    await new Promise(r => setTimeout(r, 300));
-
-    return `Market Analysis Report
-
-Product Brief: ${prompt.slice(0, 100)}
-
-Executive Summary:
-The on-chain agent payment verification market is nascent but growing rapidly.
-Key drivers: DeFi automation, autonomous agent adoption, and demand for trustless
-payment rails between AI agents.
-
-Market Fit Signal: STRONG
-- Addressable market: $2.1B (2026 estimate)
-- Competitive landscape: 3 early movers, no dominant player
-- Technical moat: cryptographic verification layer is non-trivial to replicate
-
-Recommended next step: ship MVP focused on EVM-compatible verification,
-expand to Solana in Q3. Price point: usage-based, $0.001 per verification.
-
-Confidence: 0.78 | Model: llama-3.1-8b-instruct (Phase 3: 0G Compute)`;
+    return {
+      completion: result.completion,
+      model: result.model,
+      compute_job_id: result.compute_job_id,
+      via_0g_compute: result.via_0g_compute,
+      stateHash: rootHash,
+    };
   }
 
   getCurrentState(): AgentState | null {

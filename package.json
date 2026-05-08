@@ -6,10 +6,12 @@
   "scripts": {
     "demo": "npx tsx demo/run.ts",
     "test-storage": "npx tsx demo/test-storage.ts",
+    "test-compute": "npx tsx demo/test-compute.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@0gfoundation/0g-compute-ts-sdk": "^0.8.2",
     "@0gfoundation/0g-ts-sdk": "^1.2.8",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.1",
