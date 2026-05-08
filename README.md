@@ -20,11 +20,19 @@ The Kitchen is an **autonomous product company**. Not an AI wrapper, not a demo 
 | **EMBR** | Content strategy, launch copy, social media drafts |
 | **LENS** | Web scraping, competitor intel, market signals |
 | **KURA** | QA, regression testing, reliability monitoring |
-| **PRISM** | Pricing optimization, revenue modeling |
+| **PRISM** | Crypto arbitrage, pricing optimization, autonomous revenue generation |
 | **SOLA** | Product design, UI/UX specifications |
 | **FLUX** | DevOps, deployment, infrastructure |
-| **ECHO** | Community management, Discord/Reddit monitoring |
+| **ECHO** | Instagram/Reddit/Discord — daily short-form content production and distribution |
 | **ARC** | Long-term memory, knowledge distillation |
+
+What makes The Kitchen structurally different from other agent systems:
+
+**Self-funded via crypto arbitrage.** PRISM runs autonomous arbitrage strategies across on-chain markets, generating revenue that funds the system's own operations — compute, storage, deployment. The Kitchen doesn't need external funding to keep running.
+
+**Owned media at zero distribution cost.** ECHO operates two separate Instagram news pages — one for AI, one for apps — each producing daily short-form content autonomously. When The Kitchen ships a product, those pages are the distribution channel. No ad spend. No platform dependency. The audience is already there, built and owned.
+
+These two mechanisms — self-generated revenue and owned distribution — mean The Kitchen can ship a product, market it, and fund the next cycle entirely without human intervention. 0G is what makes that loop verifiable.
 
 The problem: when this system needs to restart, make verifiable decisions, or run inference — it was doing all of that on centralized rails. That's a single point of failure for a system designed to have none.
 
@@ -256,6 +264,45 @@ npm run ui
 
 ---
 
+## Revenue & Distribution Pipeline
+
+The Kitchen has two autonomous revenue and distribution systems that are natural candidates for 0G integration:
+
+### Crypto Arbitrage (PRISM)
+
+PRISM monitors price discrepancies across on-chain and CEX markets, executes arbitrage positions, and reinvests profits into system operations. Every trade decision PRISM makes is a candidate for DA commitment — an immutable, verifiable record of what the system did with its own money, and why.
+
+```
+PRISM detects opportunity
+  → NOVA analyzes risk (0G Compute)
+  → PRISM executes trade
+  → State written to 0G Storage (position, P&L, rationale)
+  → Decision committed to 0G DA (auditable treasury action)
+```
+
+This creates an on-chain financial audit trail for an autonomous agent system managing real capital — something that currently doesn't exist anywhere.
+
+### Owned Media (ECHO)
+
+ECHO operates two Instagram news pages autonomously:
+- **AI news page** — daily shorts covering model releases, research, tools
+- **App news page** — daily shorts covering new products, launches, trends
+
+Both pages produce short-form video content daily, fully autonomously. When The Kitchen ships a product, ECHO distributes it through these channels at zero cost. No ad budget needed — the distribution infrastructure is already owned and running.
+
+```
+XEON approves product
+  → EMBR drafts launch copy
+  → ECHO produces short-form video content
+  → Published to AI/App Instagram pages
+  → Content rootHash stored on 0G Storage (provenance proof)
+  → Publication event committed to 0G DA (immutable distribution record)
+```
+
+Every piece of content ECHO publishes has a verifiable origin. Every product launch has an on-chain proof of when it was distributed and what was said. This is content provenance at scale.
+
+---
+
 ## Testnet Details
 
 | | |
@@ -293,15 +340,23 @@ The hackathon demo shows XEON + NOVA + EMBR. The full roadmap:
 - Every KURA regression alert committed to DA
 - Cross-agent workflow decisions traceable end-to-end
 
-**Milestone 5 — Content pipeline on 0G**
-- EMBR drafts published directly to 0G Storage
-- Immutable content provenance: every tweet has a rootHash
-- Reddit posts, announcements, changelogs — all on-chain
+**Milestone 5 — Owned media pipeline on 0G**
+- ECHO content stored on 0G Storage: every daily short has a rootHash (content provenance)
+- Publication events committed to 0G DA: immutable record of what was published, when, and to which channel
+- Product launch distribution proofs: when EMBR copy is posted via ECHO, the full chain (brief → draft → publish) is traceable on-chain
+- AI news page + App news page both producing verifiably autonomous content
 
-**Milestone 6 — Self-healing via 0G**
+**Milestone 6 — Crypto arbitrage treasury on 0G**
+- PRISM writes every position to 0G Storage: entry price, rationale, risk assessment, P&L
+- Every trade decision committed to 0G DA: autonomous treasury actions with immutable audit trail
+- NOVA risk analysis stored on 0G Compute + Storage: verifiable reasoning behind each position
+- On-chain financial transparency for an autonomous agent managing real capital
+
+**Milestone 7 — Self-healing via 0G**
 - Agents detect failures and restart from 0G state
 - No centralized Redis or Postgres — 0G Storage is the source of truth
 - FLUX uses DA commitments to coordinate rollbacks
+- PRISM can recover open positions from 0G state after any crash
 
 ---
 
