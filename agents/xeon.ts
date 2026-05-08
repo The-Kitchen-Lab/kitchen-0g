@@ -5,11 +5,12 @@
  *   1. Reads prior state from 0G Storage (restart recovery)
  *   2. Executes the task (dispatch, approve, coordinate)
  *   3. Writes updated state to 0G Storage
- *   4. Commits decision to 0G DA (Phase 4)
+ *   4. Commits decision to 0G DA (immutable audit trail)
  */
 
 import { v4 as uuidv4 } from "uuid";
 import { createStorageClient, AgentState } from "../integrations/storage/client.js";
+import { createAuditClient, CommitResult } from "../integrations/da/audit.js";
 
 export interface XeonTask {
   type: "approve_product" | "dispatch_task" | "coordinate";
@@ -20,11 +21,13 @@ export interface XeonResult {
   status: "completed" | "deferred";
   output: Record<string, unknown>;
   stateHash: string;
+  daCommit: CommitResult | null;
 }
 
 export class XeonAgent {
   readonly id = "XEON";
   private storage = createStorageClient();
+  private audit = createAuditClient();
   private sessionId = uuidv4();
   private state: AgentState | null = null;
 
@@ -43,22 +46,21 @@ export class XeonAgent {
     }
   }
 
-  /** Execute a task, persist state to 0G Storage after completion */
+  /** Execute a task, persist state to 0G Storage, commit decision to 0G DA */
   async executeTask(task: XeonTask): Promise<XeonResult> {
     const taskDesc = `${task.type}(${JSON.stringify(task.payload).slice(0, 60)})`;
+    const workflowId = uuidv4();
     console.log(`\n[XEON] Executing task: ${taskDesc}`);
 
-    // Simulate task processing
     const output = await this.processTask(task);
 
-    // Build next planned action hint
     const nextAction = task.type === "approve_product"
       ? "dispatch_task to NOVA for market analysis"
       : task.type === "dispatch_task"
         ? "await NOVA result, then dispatch EMBR for content"
         : "await sub-agent completions";
 
-    // Persist state to 0G Storage
+    // 1. Persist state to 0G Storage
     const newState: AgentState = {
       agent_id: this.id,
       timestamp: new Date().toISOString(),
@@ -66,19 +68,24 @@ export class XeonAgent {
       last_action: taskDesc,
       next_planned_action: nextAction,
       session_id: this.sessionId,
+      workflow_id: workflowId,
       output,
     };
 
-    const { rootHash, txHash } = await this.storage.writeAgentState(this.id, newState);
+    const { rootHash } = await this.storage.writeAgentState(this.id, newState);
     this.state = newState;
+    console.log(`[XEON] Storage committed — rootHash: ${rootHash}`);
 
-    console.log(`[XEON] State committed — rootHash: ${rootHash}`);
+    // 2. Commit critical decisions to 0G DA (approve_product + dispatch_task only)
+    let daCommit: CommitResult | null = null;
+    if (task.type === "approve_product" || task.type === "dispatch_task") {
+      daCommit = await this.audit.commitDecision(this.id, workflowId, rootHash);
+    }
 
-    return { status: "completed", output, stateHash: rootHash };
+    return { status: "completed", output, stateHash: rootHash, daCommit };
   }
 
   private async processTask(task: XeonTask): Promise<Record<string, unknown>> {
-    // Simulate real work with a short delay
     await new Promise(r => setTimeout(r, 200));
 
     switch (task.type) {
