@@ -29,6 +29,17 @@ export interface CommitResult {
   payload: DecisionPayload;
 }
 
+export interface VerifyResult {
+  verified: boolean;
+  txHash: string;
+  blockNumber: number | null;
+  from: string | null;
+  to: string | null;
+  contract_match: boolean;
+  status_ok: boolean;
+  explorerUrl: string;
+}
+
 // ── DAEntrance minimal ABI ────────────────────────────────────────────────────
 
 const DA_ENTRANCE_ABI = [
@@ -98,6 +109,54 @@ export class AuditClient {
       dataRoot,
       explorerUrl,
       payload,
+    };
+  }
+
+  /**
+   * Verify an existing DA commitment on-chain.
+   *
+   * Retrieves the transaction receipt and confirms:
+   *   - tx was mined (status === 1)
+   *   - tx was sent to the correct DAEntrance contract address
+   */
+  async verifyCommit(txHash: string): Promise<VerifyResult> {
+    console.log(`[0G DA] Verifying commitment: ${txHash.slice(0, 20)}...`);
+
+    const receipt = await this.signer.provider!.getTransactionReceipt(txHash);
+
+    if (!receipt) {
+      console.log(`[0G DA] ⚠  Receipt not found — tx may be pending or invalid`);
+      return {
+        verified: false,
+        txHash,
+        blockNumber: null,
+        from: null,
+        to: null,
+        contract_match: false,
+        status_ok: false,
+        explorerUrl: `${EXPLORER_BASE}/${txHash}`,
+      };
+    }
+
+    const contractMatch = receipt.to?.toLowerCase() === DA_ENTRANCE_ADDRESS.toLowerCase();
+    const statusOk = receipt.status === 1;
+    const verified = statusOk && contractMatch;
+
+    console.log(`[0G DA] ${verified ? "✅" : "❌"} Verification result:`);
+    console.log(`        block:          ${receipt.blockNumber}`);
+    console.log(`        status:         ${statusOk ? "success" : "failed"}`);
+    console.log(`        contract_match: ${contractMatch}`);
+    console.log(`        from:           ${receipt.from}`);
+
+    return {
+      verified,
+      txHash,
+      blockNumber: receipt.blockNumber,
+      from: receipt.from,
+      to: receipt.to ?? null,
+      contract_match: contractMatch,
+      status_ok: statusOk,
+      explorerUrl: `${EXPLORER_BASE}/${txHash}`,
     };
   }
 }

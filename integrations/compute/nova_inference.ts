@@ -1,19 +1,16 @@
 /**
  * 0G Compute wrapper for NOVA inference.
  *
- * Routes NOVA's market analysis inference through 0G Compute Network.
- * Uses OpenAI-compatible API with on-chain payment headers.
+ * Routes NOVA's market analysis through 0G Compute Network with
+ * decentralized provider discovery and qwen-2.5-7b-instruct integration.
  *
- * Setup flow:
- *   1. createReadOnlyInferenceBroker → list available providers (no ledger needed)
+ * Flow:
+ *   1. createReadOnlyInferenceBroker → list + filter providers by model
  *   2. createInferenceBroker         → authenticated inference (requires 3+ OG ledger)
- *   3. getServiceMetadata            → endpoint + model from selected provider
+ *   3. getServiceMetadata            → endpoint from selected provider
  *   4. getRequestHeaders             → billing proof headers
- *   5. OpenAI-compatible fetch       → actual inference call
- *   6. processResponse               → verify + cache fee estimate
- *
- * Fallback: if ledger is not funded (< 3 OG), stub mode is used and
- * compute_job_id is set to null. Fund the ledger to activate live inference.
+ *   5. OpenAI-compatible fetch       → inference call
+ *   6. processResponse               → verify + cache fee
  */
 
 // CJS interop — the SDK's ESM build is broken (package "type" mismatch).
@@ -34,6 +31,11 @@ const {
 } = _require(_sdkPath) as typeof import("@0gfoundation/0g-compute-ts-sdk");
 import { ethers } from "ethers";
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_MODEL = "qwen/qwen-2.5-7b-instruct";
+const MODEL_KEYWORDS = ["qwen-2.5-7b", "qwen2.5-7b", "qwen/qwen-2.5-7b"];
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface InferenceRequest {
@@ -46,15 +48,16 @@ export interface InferenceRequest {
 export interface InferenceResult {
   completion: string;
   model: string;
-  provider_address: string | null;
-  compute_job_id: string | null;   // 0G Compute job ID (from response header ZG-Res-Key)
-  via_0g_compute: boolean;
+  provider_address: string;
+  compute_job_id: string;
+  via_0g_compute: true;
 }
 
 export interface ProviderInfo {
   address: string;
   url: string;
   model: string;
+  supportsQwen: boolean;
 }
 
 // ── ComputeClient ─────────────────────────────────────────────────────────────
@@ -72,24 +75,32 @@ export class ComputeClient {
   }
 
   /**
-   * List available inference providers on 0G Compute.
+   * Discover inference providers on 0G Compute.
+   * Marks providers that support qwen-2.5-7b-instruct.
    * Read-only — does NOT require a ledger.
    */
   async listProviders(): Promise<ProviderInfo[]> {
-    console.log("[0G Compute] Listing available inference providers...");
+    console.log("[0G Compute] Discovering inference providers...");
 
     const broker = await createReadOnlyInferenceBroker(this.rpc);
     const services = await broker.listService(0, 20, false);
 
-    const providers: ProviderInfo[] = services.map((svc) => ({
-      address: svc.provider,
-      url: svc.url,
-      model: svc.model,
-    }));
+    const providers: ProviderInfo[] = services.map((svc) => {
+      const modelLower = svc.model.toLowerCase();
+      const supportsQwen = MODEL_KEYWORDS.some(kw => modelLower.includes(kw));
+      return {
+        address: svc.provider,
+        url: svc.url,
+        model: svc.model,
+        supportsQwen,
+      };
+    });
 
-    console.log(`[0G Compute] Found ${providers.length} provider(s):`);
+    const qwenCount = providers.filter(p => p.supportsQwen).length;
+    console.log(`[0G Compute] ${providers.length} provider(s) — ${qwenCount} support qwen-2.5-7b-instruct`);
     providers.forEach((p, i) => {
-      console.log(`             [${i + 1}] ${p.address.slice(0, 10)}... model=${p.model}`);
+      const tag = p.supportsQwen ? " ★ qwen" : "";
+      console.log(`             [${i + 1}] ${p.address.slice(0, 10)}... model=${p.model}${tag}`);
     });
 
     return providers;
@@ -98,34 +109,35 @@ export class ComputeClient {
   /**
    * Run inference via 0G Compute Network.
    *
-   * Requires a funded ledger (≥3 OG). If balance is insufficient,
-   * falls back to local stub and sets via_0g_compute = false.
+   * Requires a funded ledger (≥3 OG). Prefers providers that explicitly
+   * advertise qwen-2.5-7b-instruct; falls back to first available provider
+   * while still sending the qwen model name in the request body.
+   *
+   * Throws if wallet balance is insufficient or no providers are found.
    */
   async runInference(req: InferenceRequest): Promise<InferenceResult> {
+    const targetModel = req.model ?? DEFAULT_MODEL;
+
+    // Balance guard — informative error, not silent fallback
     const balance = await this.wallet.provider!.getBalance(this.wallet.address);
     const balanceOG = parseFloat(ethers.formatEther(balance));
-
     if (balanceOG < 3.0) {
-      console.log(`[0G Compute] ⚠  Wallet balance ${balanceOG.toFixed(4)} OG < 3 OG minimum for ledger`);
-      console.log(`[0G Compute]    Falling back to stub — fund with 3+ OG to activate live compute`);
-      console.log(`[0G Compute]    Faucet: https://faucet.0g.ai → ${this.wallet.address}`);
-      return this.runStub(req);
+      throw new Error(
+        `[0G Compute] Wallet balance ${balanceOG.toFixed(4)} OG — ` +
+        `minimum 3 OG required for inference ledger. ` +
+        `Fund at: https://faucet.0g.ai → ${this.wallet.address}`
+      );
     }
 
-    try {
-      return await this.runVia0GCompute(req);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.log(`[0G Compute] ⚠  Live inference failed: ${msg.slice(0, 80)}`);
-      console.log(`[0G Compute]    Falling back to stub`);
-      return this.runStub(req);
-    }
+    console.log(`[0G Compute] Running inference | model: ${targetModel} | balance: ${balanceOG.toFixed(4)} OG`);
+    return await this.runVia0GCompute({ ...req, model: targetModel });
   }
 
   private async runVia0GCompute(req: InferenceRequest): Promise<InferenceResult> {
     const contracts = CONTRACT_ADDRESSES.testnet;
+    const targetModel = req.model ?? DEFAULT_MODEL;
 
-    // 1. Create / connect ledger
+    // 1. Connect or create ledger
     console.log("[0G Compute] Connecting to on-chain ledger...");
     const ledgerBroker = new LedgerBroker(
       this.wallet,
@@ -135,11 +147,8 @@ export class ComputeClient {
     );
     await ledgerBroker.initialize();
 
-    // Ensure ledger exists
-    let ledgerExists = false;
     try {
       await ledgerBroker.getLedger();
-      ledgerExists = true;
       console.log("[0G Compute] Ledger found");
     } catch {
       console.log("[0G Compute] No ledger — creating with 3 OG...");
@@ -154,18 +163,30 @@ export class ComputeClient {
       ledgerBroker
     );
 
-    // 3. Pick first available provider
-    const services = await inferenceBroker.listService(0, 10, false);
-    if (services.length === 0) throw new Error("No inference providers available");
+    // 3. Provider discovery — prefer qwen-2.5-7b-instruct providers
+    const services = await inferenceBroker.listService(0, 20, false);
+    if (services.length === 0) {
+      throw new Error("[0G Compute] No inference providers available on network");
+    }
 
-    const provider = services[0];
-    const providerAddress = provider.provider;
-    console.log(`[0G Compute] Using provider: ${providerAddress.slice(0, 12)}...`);
+    const modelLower = targetModel.toLowerCase();
+    const qwenProviders = services.filter(svc =>
+      MODEL_KEYWORDS.some(kw => svc.model.toLowerCase().includes(kw)) ||
+      svc.model.toLowerCase() === modelLower
+    );
 
-    // 4. Get service metadata (endpoint + model)
-    const { endpoint, model } = await inferenceBroker.getServiceMetadata(providerAddress);
-    const modelToUse = req.model ?? model;
-    console.log(`[0G Compute] Endpoint: ${endpoint} | Model: ${modelToUse}`);
+    const selectedService = qwenProviders.length > 0 ? qwenProviders[0] : services[0];
+    const providerAddress = selectedService.provider;
+
+    if (qwenProviders.length > 0) {
+      console.log(`[0G Compute] ✓ qwen-2.5-7b-instruct provider found: ${providerAddress.slice(0, 12)}...`);
+    } else {
+      console.log(`[0G Compute] No dedicated qwen provider — using ${providerAddress.slice(0, 12)}... with model override`);
+    }
+
+    // 4. Get service metadata (endpoint)
+    const { endpoint } = await inferenceBroker.getServiceMetadata(providerAddress);
+    console.log(`[0G Compute] Endpoint: ${endpoint}`);
 
     // 5. Build messages
     const messages: Array<{ role: string; content: string }> = [];
@@ -174,11 +195,11 @@ export class ComputeClient {
     }
     messages.push({ role: "user", content: req.prompt });
 
-    // 6. Get billing headers (on-chain payment proof)
+    // 6. Billing headers (on-chain payment proof)
     const headers = await inferenceBroker.getRequestHeaders(providerAddress, req.prompt);
 
-    // 7. Make OpenAI-compatible call
-    console.log("[0G Compute] Sending inference request...");
+    // 7. OpenAI-compatible inference call
+    console.log(`[0G Compute] Sending request (model: ${targetModel})...`);
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: "POST",
       headers: {
@@ -186,7 +207,7 @@ export class ComputeClient {
         ...headers as Record<string, string>,
       },
       body: JSON.stringify({
-        model: modelToUse,
+        model: targetModel,
         messages,
         max_tokens: req.maxTokens ?? 800,
         stream: false,
@@ -195,7 +216,7 @@ export class ComputeClient {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`0G Compute HTTP ${response.status}: ${body.slice(0, 100)}`);
+      throw new Error(`[0G Compute] HTTP ${response.status}: ${body.slice(0, 120)}`);
     }
 
     const data = await response.json() as {
@@ -212,47 +233,16 @@ export class ComputeClient {
     const completion = data.choices[0]?.message?.content ?? "";
 
     console.log(`[0G Compute] ✅ Inference complete`);
+    console.log(`             model:          ${targetModel}`);
     console.log(`             compute_job_id: ${chatID}`);
     console.log(`             provider:       ${providerAddress}`);
 
     return {
       completion,
-      model: modelToUse,
+      model: targetModel,
       provider_address: providerAddress,
       compute_job_id: chatID,
       via_0g_compute: true,
-    };
-  }
-
-  private async runStub(req: InferenceRequest): Promise<InferenceResult> {
-    await new Promise(r => setTimeout(r, 300));
-
-    const completion = `Market Analysis Report [STUB — 0G Compute pending 3 OG ledger]
-
-Product Brief: ${req.prompt.slice(0, 100)}
-
-Executive Summary:
-The on-chain agent payment verification market is nascent but growing rapidly.
-Key drivers: DeFi automation, autonomous agent adoption, trustless payment rails.
-
-Market Fit Signal: STRONG
-- Addressable market: $2.1B (2026 estimate)
-- Competitive landscape: 3 early movers, no dominant player
-- Technical moat: cryptographic verification layer is non-trivial to replicate
-
-Recommended next step: ship MVP focused on EVM-compatible verification,
-expand to Solana in Q3. Price: $0.001 per verification.
-
-Confidence: 0.78 | Compute: 0G Network (fund ledger to activate)`;
-
-    console.log("[0G Compute] ⚡ Stub inference complete (via_0g_compute=false)");
-
-    return {
-      completion,
-      model: req.model ?? "llama-3.1-8b-instruct",
-      provider_address: null,
-      compute_job_id: null,
-      via_0g_compute: false,
     };
   }
 }

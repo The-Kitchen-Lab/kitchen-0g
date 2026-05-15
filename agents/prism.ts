@@ -47,6 +47,21 @@ export interface TradePosition {
   timestamp: string;
 }
 
+export interface PrismLoopResult {
+  cycles_run: number;
+  cycles_profitable: number;
+  cycles_rejected: number;
+  cycles_no_opportunity: number;
+  loop_pnl_usd: number;
+  positions: TradePosition[];
+  last_cycle: PrismCycleResult;
+  treasury: {
+    loop_pnl_usd: number;
+    cumulative_pnl_usd: number;
+    positions_closed: number;
+  };
+}
+
 export interface PrismCycleResult {
   cycle_id: string;
   opportunities_scanned: number;
@@ -264,6 +279,52 @@ export class PrismAgent {
         cycle_pnl_usd: position.pnl_usd,
         cumulative_pnl_usd: this.cumulativePnl,
         positions_closed: this.positionsCount,
+      },
+    };
+  }
+
+  /**
+   * M5: Run N arbitrage cycles in sequence — the live loop.
+   * Accumulates P&L across cycles; DA commit from each trade cycle is preserved.
+   */
+  async runLoop(cycles: number, novaRationale?: string): Promise<PrismLoopResult> {
+    console.log(`\n[PRISM] Starting arbitrage loop — ${cycles} cycles`);
+    const positions: TradePosition[] = [];
+    let profitable = 0;
+    let rejected = 0;
+    let noOpportunity = 0;
+    let loopPnl = 0;
+    let lastCycle!: PrismCycleResult;
+
+    for (let i = 0; i < cycles; i++) {
+      console.log(`\n[PRISM] ── Loop ${i + 1}/${cycles} ────────────────`);
+      lastCycle = await this.runCycle(novaRationale);
+
+      if (lastCycle.action === "trade_executed" && lastCycle.position) {
+        positions.push(lastCycle.position);
+        loopPnl += lastCycle.position.pnl_usd;
+        profitable++;
+      } else if (lastCycle.action === "risk_rejected") {
+        rejected++;
+      } else {
+        noOpportunity++;
+      }
+    }
+
+    console.log(`\n[PRISM] ✅ Loop complete — ${profitable}/${cycles} trades | loop P&L: $${loopPnl.toFixed(2)}`);
+
+    return {
+      cycles_run: cycles,
+      cycles_profitable: profitable,
+      cycles_rejected: rejected,
+      cycles_no_opportunity: noOpportunity,
+      loop_pnl_usd: parseFloat(loopPnl.toFixed(2)),
+      positions,
+      last_cycle: lastCycle,
+      treasury: {
+        loop_pnl_usd:       parseFloat(loopPnl.toFixed(2)),
+        cumulative_pnl_usd: this.cumulativePnl,
+        positions_closed:   this.positionsCount,
       },
     };
   }

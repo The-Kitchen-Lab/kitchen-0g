@@ -122,6 +122,14 @@ export class StorageClient {
 
     return state;
   }
+
+  /**
+   * Return the full .kitchen-index.json as a canonical registry of all
+   * agent rootHashes. This is the authoritative fleet state map.
+   */
+  listAll(): Record<string, string> {
+    return loadIndex();
+  }
 }
 
 // ── Factory ──────────────────────────────────────────────────────────────────

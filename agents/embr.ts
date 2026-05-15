@@ -71,7 +71,7 @@ export class EmbrAgent {
       `Repo: github.com/The-Kitchen-Lab/kitchen-0g\n\n` +
       `Happy to answer questions about the agent architecture or the 0G integration.`;
 
-    // Persist state to 0G Storage
+    // Persist state to 0G Storage — full content stored so ECHO can read from 0G (M5)
     const newState: AgentState = {
       agent_id: this.id,
       timestamp: new Date().toISOString(),
@@ -80,7 +80,9 @@ export class EmbrAgent {
       next_planned_action: "await XEON next dispatch",
       session_id: this.sessionId,
       product: req.productName,
-      twitter_thread_count: twitter_thread.length,
+      twitter_thread,
+      announcement,
+      reddit_post,
     };
 
     const { rootHash } = await this.storage.writeAgentState(this.id, newState);

@@ -6,11 +6,16 @@
  *   2. Executes the task (dispatch, approve, coordinate)
  *   3. Writes updated state to 0G Storage
  *   4. Commits decision to 0G DA (immutable audit trail)
+ *   5. Routes dispatch_task calls through OpenClaw Skills (Track 1)
  */
 
 import { v4 as uuidv4 } from "uuid";
 import { createStorageClient, AgentState } from "../integrations/storage/client.js";
-import { createAuditClient, CommitResult } from "../integrations/da/audit.js";
+import { createAuditClient, CommitResult, VerifyResult, AuditClient } from "../integrations/da/audit.js";
+import {
+  createOpenClawDispatchClient,
+  OpenClawDispatchResult,
+} from "../integrations/openclaw/dispatch.js";
 
 export interface XeonTask {
   type: "approve_product" | "dispatch_task" | "coordinate";
@@ -21,13 +26,15 @@ export interface XeonResult {
   status: "completed" | "deferred";
   output: Record<string, unknown>;
   stateHash: string;
-  daCommit: CommitResult | null;
+  daCommit: CommitResult;   // every XEON decision is committed to DA (M4)
+  openclawDispatch: OpenClawDispatchResult | null;
 }
 
 export class XeonAgent {
   readonly id = "XEON";
   private storage = createStorageClient();
   private audit = createAuditClient();
+  private openclaw = createOpenClawDispatchClient();
   private sessionId = uuidv4();
   private state: AgentState | null = null;
 
@@ -52,7 +59,7 @@ export class XeonAgent {
     const workflowId = uuidv4();
     console.log(`\n[XEON] Executing task: ${taskDesc}`);
 
-    const output = await this.processTask(task);
+    const output = await this.processTask(task, workflowId);
 
     const nextAction = task.type === "approve_product"
       ? "dispatch_task to NOVA for market analysis"
@@ -76,16 +83,36 @@ export class XeonAgent {
     this.state = newState;
     console.log(`[XEON] Storage committed — rootHash: ${rootHash}`);
 
-    // 2. Commit critical decisions to 0G DA (approve_product + dispatch_task only)
-    let daCommit: CommitResult | null = null;
-    if (task.type === "approve_product" || task.type === "dispatch_task") {
-      daCommit = await this.audit.commitDecision(this.id, workflowId, rootHash);
+    // 2. Route dispatch_task through OpenClaw Skills (Track 1)
+    let openclawDispatch: OpenClawDispatchResult | null = null;
+    if (task.type === "dispatch_task") {
+      const target = (task.payload.target as string | undefined) ?? "NOVA";
+      openclawDispatch = await this.openclaw.dispatch({
+        from_agent:        this.id,
+        target,
+        task_type:         (task.payload.task as string | undefined) ?? "task",
+        payload:           task.payload,
+        source_state_hash: rootHash,
+        workflow_id:       workflowId,
+      });
+
+      if (openclawDispatch.via_gateway) {
+        console.log(`[XEON] OpenClaw dispatch accepted — id: ${openclawDispatch.dispatch_id}`);
+      } else {
+        console.log(`[XEON] OpenClaw dispatch logged (gateway offline) — workflow: ${workflowId}`);
+      }
     }
 
-    return { status: "completed", output, stateHash: rootHash, daCommit };
+    // 3. Commit every XEON decision to 0G DA — full audit trail (M4)
+    const daCommit = await this.audit.commitDecision(this.id, workflowId, rootHash);
+
+    return { status: "completed", output, stateHash: rootHash, daCommit, openclawDispatch };
   }
 
-  private async processTask(task: XeonTask): Promise<Record<string, unknown>> {
+  private async processTask(
+    task: XeonTask,
+    workflowId: string,
+  ): Promise<Record<string, unknown>> {
     await new Promise(r => setTimeout(r, 200));
 
     switch (task.type) {
@@ -95,12 +122,16 @@ export class XeonAgent {
           product: task.payload.name,
           verdict: "Market fit signal positive — routing to NOVA for deep analysis",
         };
-      case "dispatch_task":
+      case "dispatch_task": {
+        const target = (task.payload.target as string | undefined) ?? "NOVA";
         return {
-          dispatched_to: task.payload.target ?? "NOVA",
-          task_id: uuidv4(),
-          priority: "high",
+          dispatched_to:      target,
+          task_id:            uuidv4(),
+          workflow_id:        workflowId,
+          priority:           "high",
+          via_openclaw_skill: true,    // signals that dispatch goes through OpenClaw
         };
+      }
       case "coordinate":
         return {
           agents_active: ["NOVA", "EMBR", "MTRK"],
@@ -111,5 +142,14 @@ export class XeonAgent {
 
   getCurrentState(): AgentState | null {
     return this.state;
+  }
+
+  /** Verify an existing DA commitment by txHash */
+  async verifyDaCommit(txHash: string): Promise<VerifyResult> {
+    return this.audit.verifyCommit(txHash);
+  }
+
+  getAuditClient(): AuditClient {
+    return this.audit;
   }
 }

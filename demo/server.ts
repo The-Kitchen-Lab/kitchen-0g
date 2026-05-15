@@ -73,6 +73,26 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url === "/api/recover" && req.method === "POST") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ started: true }));
+
+    const proc = spawn("npx", ["tsx", "demo/self-heal.ts"], { cwd: ROOT });
+
+    proc.stdout.on("data", (d: Buffer) => {
+      const line = d.toString();
+      process.stdout.write(line);
+      broadcastSSE(line);
+    });
+    proc.stderr.on("data", (d: Buffer) => {
+      process.stderr.write(d.toString());
+    });
+    proc.on("close", () => {
+      broadcastSSE("__HEAL_DONE__");
+    });
+    return;
+  }
+
   if (url === "/api/stream") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",

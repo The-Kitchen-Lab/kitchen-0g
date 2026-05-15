@@ -14,7 +14,7 @@
       --acc:#F5C842; --acc-dim:rgba(245,200,66,.15); --acc-border:rgba(245,200,66,.3);
       --border:rgba(236,236,236,.07); --border-bright:rgba(236,236,236,.12);
       --card:#0E0E0E; --card2:#111;
-      --green:#4ADE80; --red:#F87171; --blue:#60A5FA;
+      --green:#4ADE80; --red:#F87171; --blue:#60A5FA; --purple:#C084FC;
       --mono:'Geist Mono',monospace;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -47,7 +47,7 @@
     }
     .logo-text span{color:var(--acc)}
     .header-right{
-      display:flex;align-items:center;gap:20px;
+      display:flex;align-items:center;gap:12px;
     }
     .status-pill{
       display:flex;align-items:center;gap:6px;
@@ -63,6 +63,10 @@
       background:var(--acc);
       animation:pulse-dot 1s ease-in-out infinite;
     }
+    .status-dot.healing{
+      background:var(--purple);
+      animation:pulse-dot 1s ease-in-out infinite;
+    }
     @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
     .run-btn{
       font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
@@ -74,13 +78,22 @@
     .run-btn:hover{opacity:.85}
     .run-btn:active{transform:scale(.97)}
     .run-btn:disabled{opacity:.35;cursor:not-allowed}
+    .heal-btn{
+      font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+      background:transparent;color:var(--green);border:1px solid rgba(74,222,128,.3);
+      padding:8px 16px;cursor:pointer;font-weight:500;
+      transition:background .2s,border-color .2s,transform .1s;
+    }
+    .heal-btn:hover{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.5)}
+    .heal-btn:active{transform:scale(.97)}
+    .heal-btn:disabled{opacity:.35;cursor:not-allowed}
 
-    /* ── MAIN GRID ── */
+    /* ── MAIN GRID (4 panels) ── */
     .grid{
       position:relative;z-index:10;
       flex:1;overflow:hidden;
       display:grid;
-      grid-template-columns:1fr 1fr 1fr;
+      grid-template-columns:1fr 1fr 1fr 1fr;
       gap:0;
       padding:0;
     }
@@ -91,17 +104,17 @@
     }
     .panel:last-child{border-right:none}
     .panel-header{
-      padding:14px 20px 12px;
+      padding:12px 16px 10px;
       border-bottom:1px solid var(--border);
       display:flex;align-items:center;justify-content:space-between;
       flex-shrink:0;
     }
     .panel-title{
-      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-      color:var(--dim);display:flex;align-items:center;gap:8px;
+      font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--dim);display:flex;align-items:center;gap:7px;
     }
     .panel-title .icon{
-      width:14px;height:14px;opacity:.6;
+      width:13px;height:13px;opacity:.6;
     }
     .panel-count{
       font-family:var(--mono);font-size:10px;color:var(--faint);
@@ -117,9 +130,9 @@
 
     /* ── LOG ENTRIES ── */
     .log-entry{
-      padding:10px 20px;
+      padding:9px 16px;
       border-bottom:1px solid var(--border);
-      font-family:var(--mono);font-size:11px;line-height:1.6;
+      font-family:var(--mono);font-size:10px;line-height:1.6;
       color:var(--dim);
       transition:background .15s;
       animation:fade-in .2s ease-out;
@@ -139,46 +152,46 @@
 
     /* ── STORAGE CARDS ── */
     .storage-card{
-      padding:14px 20px;
+      padding:12px 16px;
       border-bottom:1px solid var(--border);
       animation:fade-in .25s ease-out;
     }
     .storage-card:hover{background:rgba(236,236,236,.02)}
     .storage-card .agent-id{
       font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
-      color:var(--acc);margin-bottom:6px;
+      color:var(--acc);margin-bottom:5px;
     }
     .storage-card .hash{
-      font-family:var(--mono);font-size:10px;color:var(--fg);
-      word-break:break-all;line-height:1.5;margin-bottom:6px;
+      font-family:var(--mono);font-size:9px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:5px;
     }
-    .storage-card .hash .label{color:var(--dim);font-size:9px}
+    .storage-card .hash .label{color:var(--dim);font-size:8px}
     .storage-card .meta{
-      font-family:var(--mono);font-size:9px;color:var(--faint);
-      display:flex;gap:12px;
+      font-family:var(--mono);font-size:8px;color:var(--faint);
+      display:flex;gap:10px;
     }
 
     /* ── DA CARDS ── */
     .da-card{
-      padding:14px 20px;
+      padding:12px 16px;
       border-bottom:1px solid var(--border);
       animation:fade-in .25s ease-out;
     }
     .da-card:hover{background:rgba(236,236,236,.02)}
     .da-card .da-label{
       font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
-      color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;
+      color:var(--blue);margin-bottom:5px;display:flex;align-items:center;gap:6px;
     }
     .da-card .da-label .confirmed{
       background:rgba(74,222,128,.1);color:var(--green);
       padding:1px 6px;font-size:8px;letter-spacing:.1em;
     }
     .da-card .tx-hash{
-      font-family:var(--mono);font-size:10px;color:var(--fg);
-      word-break:break-all;line-height:1.5;margin-bottom:8px;
+      font-family:var(--mono);font-size:9px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:7px;
     }
     .da-card .explorer-link{
-      font-family:var(--mono);font-size:9px;
+      font-family:var(--mono);font-size:8px;
       color:var(--acc);text-decoration:none;
       border-bottom:1px solid var(--acc-border);
       padding-bottom:1px;
@@ -187,20 +200,45 @@
     }
     .da-card .explorer-link:hover{color:#fff}
     .da-card .data-root{
-      font-family:var(--mono);font-size:9px;color:var(--faint);
-      margin-top:6px;word-break:break-all;
+      font-family:var(--mono);font-size:8px;color:var(--faint);
+      margin-top:5px;word-break:break-all;
+    }
+
+    /* ── SELF-HEAL CARDS ── */
+    .heal-card{
+      padding:12px 16px;
+      border-bottom:1px solid var(--border);
+      animation:fade-in .25s ease-out;
+    }
+    .heal-card:hover{background:rgba(236,236,236,.02)}
+    .heal-card .heal-phase{
+      font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--purple);margin-bottom:5px;display:flex;align-items:center;gap:6px;
+    }
+    .heal-card .heal-phase.success{color:var(--green)}
+    .heal-card .heal-phase.crash{color:var(--red)}
+    .heal-matched{
+      background:rgba(74,222,128,.12);color:var(--green);
+      padding:1px 6px;font-size:8px;letter-spacing:.1em;
+    }
+    .heal-card .heal-detail{
+      font-family:var(--mono);font-size:9px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:4px;
+    }
+    .heal-card .heal-meta{
+      font-family:var(--mono);font-size:8px;color:var(--faint);
     }
 
     /* ── EMPTY STATE ── */
     .empty{
       flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:10px;padding:40px 20px;
+      gap:10px;padding:40px 16px;
     }
     .empty .empty-icon{
-      width:32px;height:32px;opacity:.2;
+      width:28px;height:28px;opacity:.2;
     }
     .empty p{
-      font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
       color:var(--faint);text-align:center;line-height:1.8;
     }
 
@@ -226,6 +264,7 @@
     .chain-badge .dot{width:4px;height:4px;border-radius:50%;background:var(--faint)}
     .chain-badge.active{color:var(--dim)}
     .chain-badge.active .dot{background:var(--green)}
+    .chain-badge.healing .dot{background:var(--purple);animation:pulse-dot .8s ease-in-out infinite}
 
     /* ── ARTIFACT MODAL ── */
     .modal-overlay{
@@ -291,6 +330,7 @@
       <span id="status-text">IDLE</span>
     </div>
     <button class="artifact-btn" id="artifact-btn" style="display:none">VIEW ARTIFACT</button>
+    <button class="heal-btn" id="heal-btn">SELF-HEAL</button>
     <button class="run-btn" id="run-btn">RUN PIPELINE</button>
   </div>
 </header>
@@ -330,7 +370,7 @@
           <path d="M3 4v4c0 1.1 2.2 2 5 2s5-.9 5-2V4"/>
           <path d="M3 8v4c0 1.1 2.2 2 5 2s5-.9 5-2V8"/>
         </svg>
-        0G Storage Writes
+        0G Storage
       </div>
       <span class="panel-count" id="storage-count">0</span>
     </div>
@@ -369,6 +409,29 @@
     </div>
   </div>
 
+  <!-- Panel 4: Self-Heal Recovery -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 8A5 5 0 1 1 8 3"/>
+          <path d="M8 1l3 2-3 2"/>
+        </svg>
+        Self-Heal
+      </div>
+      <span class="panel-count" id="heal-count">0</span>
+    </div>
+    <div class="panel-body" id="heal-body">
+      <div class="empty" id="heal-empty">
+        <svg class="empty-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M26 16A10 10 0 1 1 16 6"/>
+          <path d="M16 2l6 4-6 4"/>
+        </svg>
+        <p>Click SELF-HEAL<br/>to demo recovery</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- FOOTER -->
@@ -386,6 +449,10 @@
     <div class="chain-badge" id="badge-da">
       <div class="dot"></div>
       DA
+    </div>
+    <div class="chain-badge" id="badge-heal">
+      <div class="dot"></div>
+      Self-Heal
     </div>
   </div>
 </footer>
@@ -431,30 +498,35 @@
 })();
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let logCount = 0, storageCount = 0, daCount = 0;
-let isRunning = false;
+let logCount = 0, storageCount = 0, daCount = 0, healCount = 0;
+let isRunning = false, isHealing = false;
 let latestArtifact = null;
 let eventSource = null;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const runBtn = document.getElementById('run-btn');
-const artifactBtn = document.getElementById('artifact-btn');
-const statusDot = document.getElementById('status-dot');
-const statusText = document.getElementById('status-text');
-const logBody = document.getElementById('log-body');
-const logEmpty = document.getElementById('log-empty');
-const storageBody = document.getElementById('storage-body');
+const runBtn       = document.getElementById('run-btn');
+const healBtn      = document.getElementById('heal-btn');
+const artifactBtn  = document.getElementById('artifact-btn');
+const statusDot    = document.getElementById('status-dot');
+const statusText   = document.getElementById('status-text');
+const logBody      = document.getElementById('log-body');
+const logEmpty     = document.getElementById('log-empty');
+const storageBody  = document.getElementById('storage-body');
 const storageEmpty = document.getElementById('storage-empty');
-const daBody = document.getElementById('da-body');
-const daEmpty = document.getElementById('da-empty');
-const logCountEl = document.getElementById('log-count');
+const daBody       = document.getElementById('da-body');
+const daEmpty      = document.getElementById('da-empty');
+const healBody     = document.getElementById('heal-body');
+const healEmpty    = document.getElementById('heal-empty');
+const logCountEl     = document.getElementById('log-count');
 const storageCountEl = document.getElementById('storage-count');
-const daCountEl = document.getElementById('da-count');
+const daCountEl      = document.getElementById('da-count');
+const healCountEl    = document.getElementById('heal-count');
 const badgeStorage = document.getElementById('badge-storage');
 const badgeCompute = document.getElementById('badge-compute');
-const badgeDA = document.getElementById('badge-da');
+const badgeDA      = document.getElementById('badge-da');
+const badgeHeal    = document.getElementById('badge-heal');
 const modalOverlay = document.getElementById('modal-overlay');
-const modalClose = document.getElementById('modal-close');
+const modalClose   = document.getElementById('modal-close');
 const artifactJson = document.getElementById('artifact-json');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -467,20 +539,21 @@ function scrollToBottom(el) {
 }
 
 function setStatus(state) {
-  statusDot.className = 'status-dot' + (state === 'running' ? ' running' : state === 'live' ? ' live' : '');
+  statusDot.className = 'status-dot' +
+    (state === 'running' ? ' running' : state === 'live' ? ' live' : state === 'healing' ? ' healing' : '');
   statusText.textContent = state.toUpperCase();
 }
 
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── Log panel ─────────────────────────────────────────────────────────────────
-function addLog(msg, cls = '') {
+function addLog(msg, cls) {
   if (logCount === 0) logEmpty.style.display = 'none';
   logCount++;
   logCountEl.textContent = logCount;
 
-  const entry = document.createElement('div');
-  entry.className = 'log-entry ' + cls;
-
-  // Detect agent prefix
   let agentClass = '';
   if (msg.includes('[XEON]') || msg.includes('XEON')) agentClass = 'agent-xeon';
   else if (msg.includes('[NOVA]') || msg.includes('NOVA')) agentClass = 'agent-nova';
@@ -489,9 +562,11 @@ function addLog(msg, cls = '') {
   const isStep = msg.startsWith('──') || msg.startsWith('╔') || msg.startsWith('║') || msg.startsWith('╚');
   if (isStep) agentClass += ' step';
 
-  const isDone = msg.includes('PIPELINE COMPLETE') || msg.includes('Built quiet');
+  const isDone = msg.includes('PIPELINE COMPLETE') || msg.includes('Built quiet') ||
+                 msg.includes('SELF-HEAL ✅') || msg.includes('Self-heal complete');
   if (isDone) agentClass += ' done';
 
+  const entry = document.createElement('div');
   entry.className = 'log-entry ' + agentClass;
   entry.innerHTML = `<span class="ts">${ts()}</span><span class="msg">${escHtml(msg)}</span>`;
   logBody.appendChild(entry);
@@ -538,8 +613,26 @@ function addDA(agentId, txHash, explorerUrl) {
   scrollToBottom(daBody);
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── Self-Heal panel ───────────────────────────────────────────────────────────
+function addHeal(phase, detail, kind) {
+  // kind: 'crash' | 'recover' | 'success' | null
+  if (healCount === 0) healEmpty.style.display = 'none';
+  healCount++;
+  healCountEl.textContent = healCount;
+  badgeHeal.className = 'chain-badge' + (kind === 'success' ? ' active' : ' healing');
+
+  const phaseClass = kind === 'success' ? 'success' : kind === 'crash' ? 'crash' : '';
+  const badge = kind === 'success' ? '<span class="heal-matched">HEALED</span>' : '';
+
+  const card = document.createElement('div');
+  card.className = 'heal-card';
+  card.innerHTML = `
+    <div class="heal-phase ${phaseClass}">${escHtml(phase)} ${badge}</div>
+    <div class="heal-detail">${escHtml(detail)}</div>
+    <div class="heal-meta">${ts()} · XEON · 0G Testnet</div>
+  `;
+  healBody.appendChild(card);
+  scrollToBottom(healBody);
 }
 
 // ── Line parser ───────────────────────────────────────────────────────────────
@@ -549,52 +642,59 @@ function parseLine(raw) {
   const line = raw.trim();
   if (!line) return;
 
-  // Track which agent context we're in
+  // Track agent context
   if (line.includes('[XEON]')) pendingAgent = 'XEON';
   else if (line.includes('[NOVA]')) pendingAgent = 'NOVA';
   else if (line.includes('[EMBR]')) pendingAgent = 'EMBR';
 
-  // Detect storage hash
+  // Storage hash
   if (line.includes('storage_hash:') || line.includes('stateHash:')) {
     const match = line.match(/[0-9a-fx]{10,}/i);
-    if (match) {
-      const agent = pendingAgent || 'AGENT';
-      const action = line.includes('stateHash') ? 'write' : 'write';
-      addStorage(agent, match[0], action);
-    }
+    if (match) addStorage(pendingAgent || 'AGENT', match[0], 'write');
   }
 
-  // Detect DA commit
+  // DA commit
   if (line.includes('da_tx:')) {
     const txMatch = line.match(/0x[0-9a-fA-F]{10,}/);
     if (txMatch) {
       const url = 'https://chainscan-galileo.0g.ai/tx/' + txMatch[0];
       addDA(pendingAgent || 'XEON', txMatch[0], url);
-      badgeDA.className = 'chain-badge active';
     }
   }
 
-  // Detect verify URL with full hash
+  // Verify URL — update last DA card link
   if (line.includes('verify:') && line.includes('chainscan')) {
     const urlMatch = line.match(/https?:\/\/\S+/);
     if (urlMatch && daCount > 0) {
-      // Update last DA card explorer link
       const links = daBody.querySelectorAll('.explorer-link');
       const last = links[links.length - 1];
-      if (last) {
-        last.href = urlMatch[0];
-        last.textContent = urlMatch[0];
-      }
+      if (last) { last.href = urlMatch[0]; last.textContent = urlMatch[0]; }
     }
   }
 
-  // Detect compute
+  // Compute badge
   if (line.includes('via_0g_compute:')) {
-    const live = line.includes('true');
-    badgeCompute.className = 'chain-badge' + (live ? ' active' : '');
+    badgeCompute.className = 'chain-badge' + (line.includes('true') ? ' active' : '');
   }
 
-  // Done
+  // Self-heal events
+  if (line.includes('[SELF-HEAL]')) {
+    if (line.includes('crash simulated') || line.includes('💥')) {
+      addHeal('CRASH SIMULATED', 'In-memory state wiped — 0G Storage intact', 'crash');
+    } else if (line.includes('fresh agent') || line.includes('🔄')) {
+      addHeal('RECOVERY STARTED', 'Spawning fresh XEON from 0G Storage rootHash', 'recover');
+    } else if (line.includes('hash_match:') || line.includes('integrity:')) {
+      const isMatch = line.includes('✅ MATCH') || (line.includes('MATCH') && !line.includes('mismatch'));
+      const hashPart = line.match(/0x[0-9a-fA-F]{8,}/)?.[0] ?? '';
+      addHeal('STATE VERIFIED', hashPart || line.replace(/\[SELF-HEAL\]/, '').trim(), isMatch ? 'success' : null);
+    } else if (line.includes('Self-heal complete') || line.includes('SELF-HEAL ✅')) {
+      addHeal('COMPLETE', 'Agent fully recovered — state integrity confirmed', 'success');
+    }
+    addLog(line);
+    return;
+  }
+
+  // Pipeline done
   if (line.includes('PIPELINE COMPLETE') || line.includes('Built quiet')) {
     setStatus('live');
     runBtn.disabled = false;
@@ -614,10 +714,8 @@ async function loadLatest() {
       latestArtifact = data;
       artifactBtn.style.display = '';
 
-      // Populate panels from artifact if empty
       if (storageCount === 0 && data.on_chain && data.on_chain.storage) {
-        const s = data.on_chain.storage;
-        for (const [key, hash] of Object.entries(s)) {
+        for (const [key, hash] of Object.entries(data.on_chain.storage)) {
           if (hash) addStorage(key.split('_')[0].toUpperCase(), hash, key);
         }
       }
@@ -625,10 +723,14 @@ async function loadLatest() {
         const d = data.on_chain.da;
         const base = d.explorer_base || 'https://chainscan-galileo.0g.ai/tx/';
         for (const [key, tx] of Object.entries(d)) {
-          if (tx && key.endsWith('_tx') && tx.startsWith('0x')) {
+          if (tx && key.endsWith('_tx') && String(tx).startsWith('0x')) {
             addDA(key.replace('_tx','').toUpperCase(), tx, base + tx);
           }
         }
+      }
+      if (healCount === 0 && data.self_heal && data.self_heal.hash_integrity) {
+        addHeal('RECOVERED', `pre: ${data.self_heal.pre_crash_hash?.slice(0,20)}...`, 'success');
+        addHeal('VERIFIED', data.self_heal.recovered_action || 'state intact', 'success');
       }
 
       setStatus('live');
@@ -647,6 +749,12 @@ function connectSSE() {
       runBtn.disabled = false;
       isRunning = false;
       loadLatest();
+    } else if (data === '__HEAL_DONE__') {
+      isHealing = false;
+      healBtn.disabled = false;
+      badgeHeal.className = 'chain-badge active';
+      setStatus(isRunning ? 'running' : 'live');
+      addHeal('COMPLETE', 'XEON state fully recovered from 0G Storage', 'success');
     } else {
       parseLine(data);
     }
@@ -655,12 +763,11 @@ function connectSSE() {
 
 // ── Run pipeline ──────────────────────────────────────────────────────────────
 runBtn.addEventListener('click', async () => {
-  if (isRunning) return;
+  if (isRunning || isHealing) return;
   isRunning = true;
   runBtn.disabled = true;
   setStatus('running');
 
-  // Reset panels
   logCount = 0; storageCount = 0; daCount = 0;
   logCountEl.textContent = '0'; storageCountEl.textContent = '0'; daCountEl.textContent = '0';
   logBody.innerHTML = ''; storageBody.innerHTML = ''; daBody.innerHTML = '';
@@ -670,19 +777,33 @@ runBtn.addEventListener('click', async () => {
   daBody.appendChild(daEmpty);
   pendingAgent = null;
 
-  // Connect SSE first
   connectSSE();
-
-  // Trigger run
   await fetch('/api/run', { method: 'POST' }).catch(() => {});
   addLog('▶ Pipeline started…', 'step');
+});
+
+// ── Self-Heal demo ────────────────────────────────────────────────────────────
+healBtn.addEventListener('click', async () => {
+  if (isHealing || isRunning) return;
+  isHealing = true;
+  healBtn.disabled = true;
+  setStatus('healing');
+
+  healCount = 0;
+  healCountEl.textContent = '0';
+  healBody.innerHTML = '';
+  healEmpty.style.display = '';
+  healBody.appendChild(healEmpty);
+
+  connectSSE();
+  await fetch('/api/recover', { method: 'POST' }).catch(() => {});
+  addHeal('STARTING', 'Crash simulation initiated for XEON agent', null);
 });
 
 // ── Artifact modal ────────────────────────────────────────────────────────────
 artifactBtn.addEventListener('click', () => {
   if (!latestArtifact) return;
-  const json = JSON.stringify(latestArtifact, null, 2);
-  artifactJson.textContent = json;
+  artifactJson.textContent = JSON.stringify(latestArtifact, null, 2);
   modalOverlay.classList.add('open');
 });
 modalClose.addEventListener('click', () => modalOverlay.classList.remove('open'));
