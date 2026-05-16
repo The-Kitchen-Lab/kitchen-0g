@@ -23,9 +23,9 @@ export interface NovaInferenceRequest {
 export interface NovaInferenceResult {
   completion: string;
   model: string;
-  compute_job_id: string;
+  compute_job_id: string | null;
   provider_address: string;
-  via_0g_compute: true;
+  via_0g_compute: boolean;
   stateHash: string;
 }
 
@@ -82,8 +82,8 @@ export class NovaAgent {
       next_planned_action: "await XEON dispatch for next task",
       session_id: this.sessionId,
       completion: result.completion.slice(0, 500),
-      compute_job_id: result.compute_job_id,
-      via_0g_compute: true,
+      compute_job_id: result.compute_job_id ?? undefined,
+      via_0g_compute: result.via_0g_compute,
       provider_address: result.provider_address,
     };
 
@@ -95,7 +95,7 @@ export class NovaAgent {
       model: result.model,
       compute_job_id: result.compute_job_id,
       provider_address: result.provider_address,
-      via_0g_compute: true,
+      via_0g_compute: result.via_0g_compute,
       stateHash: rootHash,
     };
   }

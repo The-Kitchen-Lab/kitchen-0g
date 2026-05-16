@@ -119,6 +119,16 @@ const server = http.createServer((req, res) => {
   res.end("Not found");
 });
 
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`\n[Kitchen Demo] Port ${PORT} already in use.`);
+    console.error(`[Kitchen Demo] Kill the existing process: lsof -ti :${PORT} | xargs kill -9`);
+    console.error(`[Kitchen Demo] Or set PORT=<other> before running.\n`);
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(PORT, () => {
   console.log(`\n[Kitchen Demo] UI running at http://localhost:${PORT}`);
   console.log(`[Kitchen Demo] Press Ctrl+C to stop\n`);

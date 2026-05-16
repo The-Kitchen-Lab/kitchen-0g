@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "demo": "npx tsx demo/run.ts",
+    "showcase": "npx tsx demo/showcase.ts",
     "ui": "npx tsx demo/server.ts",
     "self-heal": "npx tsx demo/self-heal.ts",
     "test-storage": "npx tsx demo/test-storage.ts",

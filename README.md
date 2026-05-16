@@ -14,17 +14,17 @@ The Kitchen is an **autonomous product company**. Not an AI wrapper, not a demo 
 
 | Agent | Role |
 |-------|------|
-| **XEON** | CTO — architecture decisions, task dispatch, state management |
-| **ATLS** | COO — resource allocation, workflow orchestration |
-| **NOVA** | AI/ML inference, market analysis, pattern recognition |
-| **EMBR** | Content strategy, launch copy, social media drafts |
-| **LENS** | Web scraping, competitor intel, market signals |
-| **KURA** | QA, regression testing, reliability monitoring |
-| **PRISM** | Crypto arbitrage, pricing optimization, autonomous revenue generation |
-| **SOLA** | Product design, UI/UX specifications |
-| **FLUX** | DevOps, deployment, infrastructure |
-| **ECHO** | Instagram/Reddit/Discord — daily short-form content production and distribution |
-| **ARC** | Long-term memory, knowledge distillation |
+| **XEON** | CTO — architecture decisions, task dispatch, DA audit trail for every decision |
+| **NOVA** | AI/ML Lead — market analysis and inference via 0G Compute Network |
+| **EMBR** | Content Lead — launch copy, Twitter threads, Reddit posts |
+| **PRISM** | Treasury — crypto arbitrage, autonomous revenue generation, position tracking on 0G |
+| **ECHO** | Distribution — Instagram/Reddit/Discord content publishing from 0G Storage |
+| **ARC** | Architecture — infrastructure design and spec generation |
+| **FLUX** | DevOps — deployment pipeline orchestration |
+| **IRIS** | Fleet Health — monitoring, coverage reporting across all 11 agents |
+| **APEX** | Growth — GTM strategy, growth experiment planning |
+| **VOLT** | Treasury Yield — yield optimization, portfolio management |
+| **SAGE** | Research — domain research, competitive intelligence |
 
 What makes The Kitchen structurally different from other agent systems:
 
@@ -61,6 +61,49 @@ XEON makes critical calls (approve product, dispatch task, abort workflow). On a
 
 ## Architecture
 
+### Agent Graph — All 11 Agents
+
+```
+                         ┌──────────────────┐
+                         │   Product Brief   │
+                         └────────┬─────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │        XEON  (CTO)         │
+                    │  reads state ─► 0G Storage │
+                    │  decisions   ─► 0G DA      │
+                    └──┬──────┬──────┬───────────┘
+                       │      │      │  dispatch
+          ┌────────────┘      │      └─────────────────┐
+          │                   │                        │
+ ┌────────▼──────┐  ┌─────────▼──────┐  ┌─────────────▼──────┐
+ │  NOVA (AI/ML) │  │  SAGE (Research)│  │    ARC (Architect)  │
+ │  0G Compute   │  │  0G Storage    │  │    0G Storage       │
+ │  0G Storage   │  └────────────────┘  └────────────────────┘
+ └────────┬──────┘
+          │ analysis output
+ ┌────────▼──────┐  ┌────────────────┐  ┌────────────────────┐
+ │ EMBR (Content)│  │ PRISM (Treasury│  │  FLUX (DevOps)     │
+ │ 0G Storage    │  │ 0G Storage     │  │  0G Storage        │
+ └────────┬──────┘  │ 0G DA (trades) │  └────────────────────┘
+          │ drafts  └────────────────┘
+ ┌────────▼──────┐  ┌────────────────┐  ┌────────────────────┐
+ │ ECHO (Distrib)│  │  VOLT (Yield)  │  │   APEX (Growth)    │
+ │ reads 0G Stor │  │  0G Storage    │  │   0G Storage       │
+ └───────────────┘  └────────────────┘  └────────────────────┘
+
+ ┌──────────────────────────────────────────────────────────┐
+ │                  IRIS  (Fleet Health)                     │
+ │   reads all agent rootHashes from 0G Storage → report    │
+ └──────────────────────────────────────────────────────────┘
+
+Every agent writes state to 0G Storage on each run.
+XEON additionally commits decisions to 0G DA.
+NOVA routes inference through 0G Compute.
+```
+
+### Decision Flow (XEON → NOVA → EMBR pipeline)
+
 ```
 Product Brief
      │
@@ -96,14 +139,22 @@ Product Brief
 
 ```
 integrations/
-  storage/client.ts     — @0gfoundation/0g-ts-sdk  (Indexer + MemData)
+  storage/client.ts          — @0gfoundation/0g-ts-sdk  (Indexer + MemData)
   compute/nova_inference.ts  — @0gfoundation/0g-compute-ts-sdk
-  da/audit.ts           — ethers.js → DAEntrance contract
+  da/audit.ts                — ethers.js → DAEntrance contract
 
 agents/
-  xeon.ts               — CTO agent (Storage read/write + DA commit)
-  nova.ts               — Inference agent (Compute + Storage write)
-  embr.ts               — Content agent (Storage write)
+  xeon.ts   — CTO (Storage read/write + DA commit on every decision)
+  nova.ts   — AI/ML (0G Compute inference + Storage write)
+  embr.ts   — Content (Storage write after draft)
+  prism.ts  — Treasury (Storage write + DA on trades)
+  echo.ts   — Distribution (reads content from 0G Storage, publishes)
+  arc.ts    — Architecture (Storage write)
+  flux.ts   — DevOps (Storage write)
+  iris.ts   — Fleet Health (reads all agent rootHashes, generates report)
+  apex.ts   — Growth (Storage write)
+  volt.ts   — Yield (Storage write)
+  sage.ts   — Research (Storage write)
 ```
 
 ---
@@ -187,7 +238,17 @@ The `dataRoot` is `keccak256({ agent_id, workflow_id, state_hash, timestamp })` 
 https://chainscan-galileo.0g.ai/tx/<txHash>
 ```
 
-**Live DA commit** (from testnet): `0xd0b4dd050e244e254ee656db29219b59487c46c636d94f1fc5e2c2b229959cf3`
+**Live DA commits** (7 verified on testnet):
+
+| txHash | Event |
+|--------|-------|
+| [`0x8490...0157`](https://chainscan-galileo.0g.ai/tx/0x8490ed43c2ea9706f36bf6157fa136c156e0a374acc9cf1050f3c4820a1b0157) | XEON approve_product (Run 1) |
+| [`0xbd7c...8a2`](https://chainscan-galileo.0g.ai/tx/0xbd7c0301c4a309a6d9987a62b2a9d930fe95b6702ea843a6b9347c97a86878a2) | XEON dispatch→NOVA (Run 1) |
+| [`0x1fae...c86`](https://chainscan-galileo.0g.ai/tx/0x1faed04476fe135ad8b3d5db46d2544fa053b8320bf83d619684ccbfa0358c86) | PRISM trade_executed (Run 1) |
+| [`0xd699...f4d8`](https://chainscan-galileo.0g.ai/tx/0xd699cf49a3293edb24fa34569c576cf9f3121562823079ed6c6f657df3a3f4d8) | XEON dispatch (Run 2) |
+| [`0xb81e...2ee`](https://chainscan-galileo.0g.ai/tx/0xb81e8c21e57da9adee21863b6e2719e9083ccbeebb9f5481e4af58c9974492ee) | XEON approve_product (Run 3 — full 11-agent) |
+| [`0x1046...cb8`](https://chainscan-galileo.0g.ai/tx/0x1046133c39fac79db9c2d50d51bca02a2901cce37cdda81bd92e3c860dd3dcb8) | XEON approve_product (Run 4) |
+| [`0x598b...35a3a`](https://chainscan-galileo.0g.ai/tx/0x598b4136435f95381d250d7d85a9481c46d03e72ac0e71417b9ec03f29a35a3a) | XEON approve_product (Run 5) |
 
 ---
 
@@ -219,6 +280,14 @@ ZG_STORAGE_INDEXER=https://indexer-storage-testnet-turbo.0g.ai
 ```
 
 Get testnet OG: [faucet.0g.ai](https://faucet.0g.ai)
+
+**Minimum balances**: 0.1 OG for Storage + DA writes; 3+ OG for live Compute inference (falls back to stub mode if under 3 OG — all other integrations remain live).
+
+**Test wallet** (Galileo testnet only — do not send real funds):
+```
+0x608F727E19B7B91f2BAbc71F03b9464956CC469b
+```
+This is the wallet used in all demo runs. All on-chain proofs in this README are from this address.
 
 ### Run
 
@@ -320,19 +389,19 @@ Every piece of content ECHO publishes has a verifiable origin. Every product lau
 
 The hackathon demo shows XEON + NOVA + EMBR. The full roadmap:
 
-**Milestone 1 — Core agents on-chain** *(current)*
+**Milestone 1 — Core agents on-chain** *(current — demo shows M1–M6)*
 - XEON: Storage read/write + DA commit on every decision
 - NOVA: Compute inference + Storage write
 - EMBR: Storage write after content draft
 
-**Milestone 2 — Fleet-wide Storage**
-- ATLS: Workflow state persisted across sessions
-- LENS: Scraped market intel stored on 0G (content-addressed, deduplicated)
-- KURA: Test results and regression reports stored on 0G
+**Milestone 2 — Extended fleet Storage** *(current — all 11 agents writing state)*
+- ARC, FLUX, IRIS, APEX, VOLT, SAGE: all write state to 0G Storage on every run
+- Fleet index (`.kitchen-index.json`) tracks rootHash for all 11 agents
+- IRIS generates fleet health reports from 0G Storage coverage
 
 **Milestone 3 — Compute for all inference agents**
 - PRISM: Pricing model inference via 0G Compute
-- SOLA: Design spec generation via 0G Compute
+- ARC: Infrastructure spec generation via 0G Compute
 - ECHO: Sentiment analysis via 0G Compute
 
 **Milestone 4 — Full DA audit trail**
