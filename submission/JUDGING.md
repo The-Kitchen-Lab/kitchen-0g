@@ -5,6 +5,57 @@
 
 ---
 
+## 0. Before 0G — What Already Existed
+
+The Kitchen was a running system before this hackathon. This section documents what was live, what the actual centralization problems were, and what 0G changed.
+
+### What was already running
+
+| Component | Pre-0G stack | Working? |
+|-----------|-------------|---------|
+| Agent orchestration (XEON → fleet) | TypeScript pipeline, in-process | ✅ Yes |
+| AI inference (NOVA) | OpenAI API | ✅ Yes |
+| Content generation (EMBR) | Claude API | ✅ Yes |
+| Agent memory / state persistence | Redis (single node) | ✅ Yes — with SPOF |
+| Crypto arbitrage (PRISM) | DEXes + prediction markets | ✅ Yes |
+| Owned media distribution (ECHO) | 2× Instagram pages, autonomous | ✅ Yes |
+| Revenue → treasury → reinvestment loop | Internal accounting | ✅ Yes |
+| Decision audit trail | None — logs only, mutable | ❌ No |
+
+The system functioned. The autonomy claim was real. But three structural problems existed:
+
+### The three centralization problems
+
+**1. Redis as agent memory.** Redis is a single node. Any infrastructure failure resets every agent to zero — no context, no history. A 24/7 autonomous system cannot have this failure mode.
+
+**2. OpenAI as the inference layer.** One company's API with rate limits, censorship potential, and outage risk. The Kitchen's reasoning capability was entirely dependent on a centralized third party.
+
+**3. No verifiable decision record.** XEON's decisions — approve a product, trigger PRISM, dispatch tasks — existed only in mutable application logs. For an agent managing real capital autonomously, that's not a legitimate audit trail.
+
+### What 0G changed
+
+| Problem | Before | After |
+|---------|--------|-------|
+| Agent state on crash | Lost — agent starts cold | Restored from `rootHash` on 0G Storage |
+| Inference dependency | OpenAI monopoly | 0G Compute decentralized provider network |
+| Decision verifiability | None | Immutable `txHash` on 0G DA per XEON decision |
+| PRISM trade proof | Internal P&L only | On-chain DA commit per trade — verifiable treasury |
+
+### What 0G did NOT change — and why
+
+| Component | Still NOT on 0G | Reason |
+|-----------|----------------|--------|
+| ECHO distribution | Content posting stays on Instagram/Reddit | Web2 platforms — no on-chain equivalent exists. Content *provenance* (rootHash per post) is on the roadmap. |
+| LENS market scraping | Raw scraped data stays internal | High data volume, low verifiability requirement for v1. Filtered intel storage is Milestone 2. |
+| KURA QA monitoring | Alerts stay internal | Internal reliability tooling — no external verifiability needed. |
+| SOLA design specs | UI/UX artifacts stay local | Design files aren't decision-critical. |
+| FLUX deployments | DevOps stays internal | Deployment coordination in-process. DA for rollback proofs is on the roadmap. |
+| ATLS workflow state | Stays in-process | Cross-session workflow persistence is Milestone 2. |
+
+**The principle:** We integrated 0G where verifiability or crash-safety materially changes the system's properties — not to maximize coverage metrics.
+
+---
+
 ## 1. What was built
 
 The Kitchen is an autonomous product company — 11 specialized agents running in coordinated loops, shipping products without human sign-offs. This submission wires The Kitchen's core pipeline to 0G's decentralized primitives:
