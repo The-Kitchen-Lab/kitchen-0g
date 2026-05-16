@@ -73,25 +73,29 @@ export class StorageClient {
 
     console.log(`[0G Storage] ↑ Writing state for ${agentId}...`);
 
-    const [result, err] = await this.indexer.upload(
-      file,
-      this.rpc,
-      this.signer,
-      { expectedReplica: 1 }
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [result, err] = await this.indexer.upload(file, this.rpc, this.signer as any, {
+      expectedReplica: 1,
+    });
 
     if (err) throw new Error(`0G Storage upload failed: ${err.message}`);
 
+    if (!("rootHash" in result)) {
+      throw new Error("Unexpected multi-root upload result from 0G Storage");
+    }
+
+    const { rootHash, txHash } = result;
+
     // Persist rootHash in local index for later retrieval
     const index = loadIndex();
-    index[agentId] = result.rootHash;
+    index[agentId] = rootHash;
     saveIndex(index);
 
     console.log(`[0G Storage] ✅ ${agentId} state written`);
-    console.log(`             txHash:   ${result.txHash}`);
-    console.log(`             rootHash: ${result.rootHash}`);
+    console.log(`             txHash:   ${txHash}`);
+    console.log(`             rootHash: ${rootHash}`);
 
-    return result;
+    return { txHash, rootHash };
   }
 
   /**

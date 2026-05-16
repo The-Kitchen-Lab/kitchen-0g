@@ -127,8 +127,9 @@ export class ComputeClient {
 
     // 1. Create / connect ledger
     console.log("[0G Compute] Connecting to on-chain ledger...");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ledgerBroker = new LedgerBroker(
-      this.wallet,
+      this.wallet as any,
       contracts.ledger,
       contracts.inference,
       contracts.fineTuning
@@ -148,8 +149,9 @@ export class ComputeClient {
     }
 
     // 2. Create inference broker
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inferenceBroker = await createInferenceBroker(
-      this.wallet,
+      this.wallet as any,
       contracts.inference,
       ledgerBroker
     );
@@ -183,7 +185,7 @@ export class ComputeClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...headers as Record<string, string>,
+        ...(headers as unknown as Record<string, string>),
       },
       body: JSON.stringify({
         model: modelToUse,

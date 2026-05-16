@@ -14,7 +14,7 @@
       --acc:#F5C842; --acc-dim:rgba(245,200,66,.15); --acc-border:rgba(245,200,66,.3);
       --border:rgba(236,236,236,.07); --border-bright:rgba(236,236,236,.12);
       --card:#0E0E0E; --card2:#111;
-      --green:#4ADE80; --red:#F87171; --blue:#60A5FA;
+      --green:#4ADE80; --red:#F87171; --blue:#60A5FA; --purple:#C084FC;
       --mono:'Geist Mono',monospace;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -28,88 +28,101 @@
     /* ── HEADER ── */
     header{
       position:relative;z-index:10;
-      padding:16px 28px;
+      padding:14px 28px;
       border-bottom:1px solid var(--border);
       display:flex;align-items:center;justify-content:space-between;
       flex-shrink:0;
     }
-    .logo{
-      display:flex;align-items:center;gap:12px;
-    }
+    .logo{display:flex;align-items:center;gap:12px}
     .logo-mark{
-      width:28px;height:28px;
+      width:26px;height:26px;
       background:var(--acc);
       display:flex;align-items:center;justify-content:center;
     }
-    .logo-mark svg{width:16px;height:16px;fill:#080808}
-    .logo-text{
-      font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg);
-    }
+    .logo-mark svg{width:14px;height:14px;fill:#080808}
+    .logo-text{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg)}
     .logo-text span{color:var(--acc)}
-    .header-right{
-      display:flex;align-items:center;gap:20px;
-    }
+    .header-right{display:flex;align-items:center;gap:16px}
     .status-pill{
       display:flex;align-items:center;gap:6px;
-      font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
-      color:var(--dim);
+      font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
     }
     .status-dot{
-      width:6px;height:6px;border-radius:50%;background:var(--dim);
-      transition:background .3s;
+      width:6px;height:6px;border-radius:50%;background:var(--dim);transition:background .3s;
     }
     .status-dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
-    .status-dot.running{
-      background:var(--acc);
-      animation:pulse-dot 1s ease-in-out infinite;
-    }
+    .status-dot.running{background:var(--acc);animation:pulse-dot 1s ease-in-out infinite}
     @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
     .run-btn{
       font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
       background:var(--acc);color:#080808;border:none;
-      padding:8px 18px;cursor:pointer;
-      font-weight:500;
+      padding:7px 16px;cursor:pointer;font-weight:500;
       transition:opacity .2s,transform .1s;
     }
     .run-btn:hover{opacity:.85}
     .run-btn:active{transform:scale(.97)}
     .run-btn:disabled{opacity:.35;cursor:not-allowed}
+    .artifact-btn{
+      font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+      background:transparent;border:1px solid var(--border-bright);color:var(--dim);
+      padding:6px 12px;cursor:pointer;transition:border-color .2s,color .2s;
+    }
+    .artifact-btn:hover{border-color:var(--acc-border);color:var(--fg)}
+
+    /* ── METRICS STRIP ── */
+    .metrics-strip{
+      position:relative;z-index:10;
+      display:flex;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .metric{
+      flex:1;padding:10px 20px;border-right:1px solid var(--border);
+      display:flex;flex-direction:column;gap:2px;
+    }
+    .metric:last-child{border-right:none}
+    .metric-value{
+      font-family:var(--mono);font-size:15px;font-weight:500;color:var(--fg);
+      letter-spacing:-.01em;
+    }
+    .metric-value.green{color:var(--green)}
+    .metric-value.yellow{color:var(--acc)}
+    .metric-value.blue{color:var(--blue)}
+    .metric-value.purple{color:var(--purple)}
+    .metric-label{
+      font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+    }
 
     /* ── MAIN GRID ── */
     .grid{
       position:relative;z-index:10;
       flex:1;overflow:hidden;
       display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:0;
-      padding:0;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:0;padding:0;
     }
     .panel{
       border-right:1px solid var(--border);
-      display:flex;flex-direction:column;
-      overflow:hidden;
+      display:flex;flex-direction:column;overflow:hidden;
     }
     .panel:last-child{border-right:none}
     .panel-header{
-      padding:14px 20px 12px;
+      padding:12px 16px 10px;
       border-bottom:1px solid var(--border);
       display:flex;align-items:center;justify-content:space-between;
       flex-shrink:0;
     }
     .panel-title{
-      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-      color:var(--dim);display:flex;align-items:center;gap:8px;
+      font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--dim);display:flex;align-items:center;gap:6px;
     }
-    .panel-title .icon{
-      width:14px;height:14px;opacity:.6;
-    }
+    .panel-title .icon{width:12px;height:12px;opacity:.6}
     .panel-count{
       font-family:var(--mono);font-size:10px;color:var(--faint);
-      background:rgba(236,236,236,.06);padding:2px 7px;
+      background:rgba(236,236,236,.06);padding:2px 6px;
     }
     .panel-body{
-      flex:1;overflow-y:auto;padding:0;
-      scroll-behavior:smooth;
+      flex:1;overflow-y:auto;padding:0;scroll-behavior:smooth;
     }
     .panel-body::-webkit-scrollbar{width:3px}
     .panel-body::-webkit-scrollbar-track{background:transparent}
@@ -117,108 +130,114 @@
 
     /* ── LOG ENTRIES ── */
     .log-entry{
-      padding:10px 20px;
+      padding:8px 16px;
       border-bottom:1px solid var(--border);
-      font-family:var(--mono);font-size:11px;line-height:1.6;
+      font-family:var(--mono);font-size:10px;line-height:1.6;
       color:var(--dim);
       transition:background .15s;
       animation:fade-in .2s ease-out;
     }
     .log-entry:hover{background:rgba(236,236,236,.02)}
-    @keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-    .log-entry .ts{
-      font-size:9px;color:var(--faint);letter-spacing:.08em;display:block;margin-bottom:2px;
-    }
+    @keyframes fade-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+    .log-entry .ts{font-size:8px;color:var(--faint);letter-spacing:.08em;display:block;margin-bottom:1px}
     .log-entry .msg{white-space:pre-wrap;word-break:break-all}
     .log-entry.step .msg{color:var(--fg)}
-    .log-entry.agent-xeon .agent-tag{color:#F5C842}
-    .log-entry.agent-nova .agent-tag{color:#60A5FA}
-    .log-entry.agent-embr .agent-tag{color:#C084FC}
     .log-entry.done .msg{color:var(--green)}
     .log-entry.error .msg{color:var(--red)}
 
     /* ── STORAGE CARDS ── */
     .storage-card{
-      padding:14px 20px;
-      border-bottom:1px solid var(--border);
+      padding:11px 16px;border-bottom:1px solid var(--border);
       animation:fade-in .25s ease-out;
     }
     .storage-card:hover{background:rgba(236,236,236,.02)}
     .storage-card .agent-id{
-      font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
-      color:var(--acc);margin-bottom:6px;
+      font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--acc);margin-bottom:4px;
     }
+    .storage-card.arc .agent-id{color:var(--purple)}
     .storage-card .hash{
-      font-family:var(--mono);font-size:10px;color:var(--fg);
-      word-break:break-all;line-height:1.5;margin-bottom:6px;
+      font-family:var(--mono);font-size:9px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:4px;
     }
-    .storage-card .hash .label{color:var(--dim);font-size:9px}
+    .storage-card .hash .label{color:var(--dim);font-size:8px}
     .storage-card .meta{
-      font-family:var(--mono);font-size:9px;color:var(--faint);
-      display:flex;gap:12px;
+      font-family:var(--mono);font-size:8px;color:var(--faint);display:flex;gap:10px;
     }
 
     /* ── DA CARDS ── */
     .da-card{
-      padding:14px 20px;
-      border-bottom:1px solid var(--border);
+      padding:11px 16px;border-bottom:1px solid var(--border);
       animation:fade-in .25s ease-out;
     }
     .da-card:hover{background:rgba(236,236,236,.02)}
     .da-card .da-label{
-      font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
-      color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;
+      font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--blue);margin-bottom:4px;display:flex;align-items:center;gap:6px;
     }
-    .da-card .da-label .confirmed{
+    .da-card.prism .da-label{color:var(--green)}
+    .da-card .confirmed{
       background:rgba(74,222,128,.1);color:var(--green);
-      padding:1px 6px;font-size:8px;letter-spacing:.1em;
+      padding:1px 5px;font-size:7px;letter-spacing:.1em;
     }
     .da-card .tx-hash{
-      font-family:var(--mono);font-size:10px;color:var(--fg);
-      word-break:break-all;line-height:1.5;margin-bottom:8px;
+      font-family:var(--mono);font-size:9px;color:var(--fg);
+      word-break:break-all;line-height:1.5;margin-bottom:6px;
     }
     .da-card .explorer-link{
-      font-family:var(--mono);font-size:9px;
+      font-family:var(--mono);font-size:8px;
       color:var(--acc);text-decoration:none;
-      border-bottom:1px solid var(--acc-border);
-      padding-bottom:1px;
-      transition:color .2s;
-      word-break:break-all;
+      border-bottom:1px solid var(--acc-border);padding-bottom:1px;
+      transition:color .2s;word-break:break-all;
     }
     .da-card .explorer-link:hover{color:#fff}
     .da-card .data-root{
-      font-family:var(--mono);font-size:9px;color:var(--faint);
-      margin-top:6px;word-break:break-all;
+      font-family:var(--mono);font-size:8px;color:var(--faint);margin-top:4px;
     }
+
+    /* ── PRISM CARDS ── */
+    .prism-card{
+      padding:11px 16px;border-bottom:1px solid var(--border);
+      animation:fade-in .25s ease-out;
+    }
+    .prism-card:hover{background:rgba(236,236,236,.02)}
+    .prism-card .prism-label{
+      font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--green);margin-bottom:4px;display:flex;align-items:center;gap:6px;
+    }
+    .prism-card .prism-row{
+      font-family:var(--mono);font-size:9px;color:var(--dim);
+      display:flex;justify-content:space-between;margin-bottom:2px;
+    }
+    .prism-card .prism-row .val{color:var(--fg)}
+    .prism-card .prism-row .val.pos{color:var(--green)}
+    .prism-card .prism-hash{
+      font-family:var(--mono);font-size:8px;color:var(--faint);
+      word-break:break-all;margin-top:6px;line-height:1.5;
+    }
+    .prism-card .prism-hash .label{color:var(--faint)}
 
     /* ── EMPTY STATE ── */
     .empty{
       flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:10px;padding:40px 20px;
+      gap:8px;padding:30px 16px;
     }
-    .empty .empty-icon{
-      width:32px;height:32px;opacity:.2;
-    }
+    .empty .empty-icon{width:28px;height:28px;opacity:.2}
     .empty p{
-      font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+      font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
       color:var(--faint);text-align:center;line-height:1.8;
     }
 
     /* ── FOOTER ── */
     footer{
       position:relative;z-index:10;
-      padding:10px 28px;
+      padding:8px 28px;
       border-top:1px solid var(--border);
       display:flex;align-items:center;justify-content:space-between;
       flex-shrink:0;
     }
-    .footer-left{
-      font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
-      color:var(--faint);
-    }
-    .chain-badges{
-      display:flex;gap:12px;
-    }
+    .footer-left{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint)}
+    .chain-badges{display:flex;gap:12px}
     .chain-badge{
       font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
       color:var(--faint);display:flex;align-items:center;gap:5px;
@@ -242,35 +261,22 @@
     }
     .modal-overlay.open .modal{transform:none}
     .modal-header{
-      padding:16px 20px;border-bottom:1px solid var(--border);
+      padding:14px 18px;border-bottom:1px solid var(--border);
       display:flex;align-items:center;justify-content:space-between;
     }
-    .modal-title{
-      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-      color:var(--dim);
-    }
+    .modal-title{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
     .modal-close{
       background:none;border:none;color:var(--faint);cursor:pointer;
-      font-family:var(--mono);font-size:14px;line-height:1;padding:0;
-      transition:color .15s;
+      font-family:var(--mono);font-size:14px;line-height:1;padding:0;transition:color .15s;
     }
     .modal-close:hover{color:var(--fg)}
-    .modal-body{
-      flex:1;overflow-y:auto;padding:20px;
-    }
+    .modal-body{flex:1;overflow-y:auto;padding:18px}
     .modal-body::-webkit-scrollbar{width:3px}
     .modal-body::-webkit-scrollbar-thumb{background:var(--border-bright)}
     .artifact-json{
-      font-family:var(--mono);font-size:11px;line-height:1.7;
+      font-family:var(--mono);font-size:10px;line-height:1.7;
       color:var(--dim);white-space:pre-wrap;word-break:break-all;
     }
-    .artifact-json .key{color:var(--acc)}
-    .artifact-btn{
-      font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
-      background:transparent;border:1px solid var(--border-bright);color:var(--dim);
-      padding:6px 14px;cursor:pointer;transition:border-color .2s,color .2s;
-    }
-    .artifact-btn:hover{border-color:var(--acc-border);color:var(--fg)}
   </style>
 </head>
 <body>
@@ -294,6 +300,30 @@
     <button class="run-btn" id="run-btn">RUN PIPELINE</button>
   </div>
 </header>
+
+<!-- METRICS STRIP -->
+<div class="metrics-strip">
+  <div class="metric">
+    <span class="metric-value yellow" id="m-storage">—</span>
+    <span class="metric-label">STORAGE WRITES</span>
+  </div>
+  <div class="metric">
+    <span class="metric-value purple" id="m-arc">—</span>
+    <span class="metric-label">ARC MEMORY</span>
+  </div>
+  <div class="metric">
+    <span class="metric-value blue" id="m-da">—</span>
+    <span class="metric-label">DA COMMITS</span>
+  </div>
+  <div class="metric">
+    <span class="metric-value green" id="m-prism">—</span>
+    <span class="metric-label">PRISM PnL</span>
+  </div>
+  <div class="metric">
+    <span class="metric-value" id="m-treasury">—</span>
+    <span class="metric-label">TREASURY (USD)</span>
+  </div>
+</div>
 
 <!-- PANELS -->
 <div class="grid">
@@ -321,7 +351,7 @@
     </div>
   </div>
 
-  <!-- Panel 2: 0G Storage Writes -->
+  <!-- Panel 2: 0G Storage + ARC Memory -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">
@@ -330,7 +360,7 @@
           <path d="M3 4v4c0 1.1 2.2 2 5 2s5-.9 5-2V4"/>
           <path d="M3 8v4c0 1.1 2.2 2 5 2s5-.9 5-2V8"/>
         </svg>
-        0G Storage Writes
+        0G Storage + ARC
       </div>
       <span class="panel-count" id="storage-count">0</span>
     </div>
@@ -369,24 +399,39 @@
     </div>
   </div>
 
+  <!-- Panel 4: PRISM Revenue -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 12l4-4 3 3 5-7"/>
+          <path d="M10 5h4v4"/>
+        </svg>
+        PRISM Revenue
+      </div>
+      <span class="panel-count" id="prism-count">0</span>
+    </div>
+    <div class="panel-body" id="prism-body">
+      <div class="empty" id="prism-empty">
+        <svg class="empty-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 24l8-8 6 6 10-14"/>
+          <path d="M20 10h8v8"/>
+        </svg>
+        <p>No arbitrage<br/>cycles yet</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-left">Istanbul · May 2026 · 0G Galileo Testnet</div>
+  <div class="footer-left">Istanbul · May 2026 · 0G Galileo Testnet V3</div>
   <div class="chain-badges">
-    <div class="chain-badge" id="badge-storage">
-      <div class="dot"></div>
-      Storage
-    </div>
-    <div class="chain-badge" id="badge-compute">
-      <div class="dot"></div>
-      Compute
-    </div>
-    <div class="chain-badge" id="badge-da">
-      <div class="dot"></div>
-      DA
-    </div>
+    <div class="chain-badge" id="badge-storage"><div class="dot"></div>Storage</div>
+    <div class="chain-badge" id="badge-arc"><div class="dot"></div>ARC Memory</div>
+    <div class="chain-badge" id="badge-compute"><div class="dot"></div>Compute</div>
+    <div class="chain-badge" id="badge-da"><div class="dot"></div>DA</div>
   </div>
 </footer>
 
@@ -394,7 +439,7 @@
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">Pipeline Artifact</span>
+      <span class="modal-title">Pipeline Artifact — Full JSON</span>
       <button class="modal-close" id="modal-close">✕</button>
     </div>
     <div class="modal-body">
@@ -431,44 +476,47 @@
 })();
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let logCount = 0, storageCount = 0, daCount = 0;
+let logCount = 0, storageCount = 0, daCount = 0, prismCount = 0;
 let isRunning = false;
 let latestArtifact = null;
 let eventSource = null;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const runBtn = document.getElementById('run-btn');
-const artifactBtn = document.getElementById('artifact-btn');
-const statusDot = document.getElementById('status-dot');
-const statusText = document.getElementById('status-text');
-const logBody = document.getElementById('log-body');
-const logEmpty = document.getElementById('log-empty');
-const storageBody = document.getElementById('storage-body');
-const storageEmpty = document.getElementById('storage-empty');
-const daBody = document.getElementById('da-body');
-const daEmpty = document.getElementById('da-empty');
-const logCountEl = document.getElementById('log-count');
-const storageCountEl = document.getElementById('storage-count');
-const daCountEl = document.getElementById('da-count');
-const badgeStorage = document.getElementById('badge-storage');
-const badgeCompute = document.getElementById('badge-compute');
-const badgeDA = document.getElementById('badge-da');
-const modalOverlay = document.getElementById('modal-overlay');
-const modalClose = document.getElementById('modal-close');
-const artifactJson = document.getElementById('artifact-json');
+const runBtn        = document.getElementById('run-btn');
+const artifactBtn   = document.getElementById('artifact-btn');
+const statusDot     = document.getElementById('status-dot');
+const statusText    = document.getElementById('status-text');
+const logBody       = document.getElementById('log-body');
+const logEmpty      = document.getElementById('log-empty');
+const storageBody   = document.getElementById('storage-body');
+const storageEmpty  = document.getElementById('storage-empty');
+const daBody        = document.getElementById('da-body');
+const daEmpty       = document.getElementById('da-empty');
+const prismBody     = document.getElementById('prism-body');
+const prismEmpty    = document.getElementById('prism-empty');
+const logCountEl    = document.getElementById('log-count');
+const storageCountEl= document.getElementById('storage-count');
+const daCountEl     = document.getElementById('da-count');
+const prismCountEl  = document.getElementById('prism-count');
+const badgeStorage  = document.getElementById('badge-storage');
+const badgeArc      = document.getElementById('badge-arc');
+const badgeCompute  = document.getElementById('badge-compute');
+const badgeDA       = document.getElementById('badge-da');
+const modalOverlay  = document.getElementById('modal-overlay');
+const modalClose    = document.getElementById('modal-close');
+const artifactJson  = document.getElementById('artifact-json');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function ts() {
   return new Date().toLocaleTimeString('en-US', { hour12: false });
 }
-
-function scrollToBottom(el) {
-  el.scrollTop = el.scrollHeight;
-}
-
+function scrollToBottom(el) { el.scrollTop = el.scrollHeight; }
 function setStatus(state) {
   statusDot.className = 'status-dot' + (state === 'running' ? ' running' : state === 'live' ? ' live' : '');
   statusText.textContent = state.toUpperCase();
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Log panel ─────────────────────────────────────────────────────────────────
@@ -476,55 +524,46 @@ function addLog(msg, cls = '') {
   if (logCount === 0) logEmpty.style.display = 'none';
   logCount++;
   logCountEl.textContent = logCount;
-
   const entry = document.createElement('div');
-  entry.className = 'log-entry ' + cls;
-
-  // Detect agent prefix
-  let agentClass = '';
-  if (msg.includes('[XEON]') || msg.includes('XEON')) agentClass = 'agent-xeon';
-  else if (msg.includes('[NOVA]') || msg.includes('NOVA')) agentClass = 'agent-nova';
-  else if (msg.includes('[EMBR]') || msg.includes('EMBR')) agentClass = 'agent-embr';
-
   const isStep = msg.startsWith('──') || msg.startsWith('╔') || msg.startsWith('║') || msg.startsWith('╚');
-  if (isStep) agentClass += ' step';
-
   const isDone = msg.includes('PIPELINE COMPLETE') || msg.includes('Built quiet');
-  if (isDone) agentClass += ' done';
-
-  entry.className = 'log-entry ' + agentClass;
+  const isErr  = msg.includes('Error') || msg.includes('error');
+  entry.className = 'log-entry' + (isStep ? ' step' : '') + (isDone ? ' done' : '') + (isErr ? ' error' : '');
   entry.innerHTML = `<span class="ts">${ts()}</span><span class="msg">${escHtml(msg)}</span>`;
   logBody.appendChild(entry);
   scrollToBottom(logBody);
 }
 
 // ── Storage panel ─────────────────────────────────────────────────────────────
-function addStorage(agentId, hash, action) {
+function addStorage(agentId, hash, action, isArc = false) {
   if (storageCount === 0) storageEmpty.style.display = 'none';
   storageCount++;
   storageCountEl.textContent = storageCount;
+  document.getElementById('m-storage').textContent = storageCount;
   badgeStorage.className = 'chain-badge active';
+  if (isArc) badgeArc.className = 'chain-badge active';
 
   const card = document.createElement('div');
-  card.className = 'storage-card';
+  card.className = 'storage-card' + (isArc ? ' arc' : '');
   card.innerHTML = `
     <div class="agent-id">${escHtml(agentId)} — ${escHtml(action)}</div>
     <div class="hash"><span class="label">root_hash  </span>${escHtml(hash)}</div>
-    <div class="meta"><span>${ts()}</span><span>0G Testnet</span></div>
+    <div class="meta"><span>${ts()}</span><span>${isArc ? 'ARC Memory' : '0G Testnet'}</span></div>
   `;
   storageBody.appendChild(card);
   scrollToBottom(storageBody);
 }
 
 // ── DA panel ──────────────────────────────────────────────────────────────────
-function addDA(agentId, txHash, explorerUrl) {
+function addDA(agentId, txHash, explorerUrl, isPrism = false) {
   if (daCount === 0) daEmpty.style.display = 'none';
   daCount++;
   daCountEl.textContent = daCount;
+  document.getElementById('m-da').textContent = daCount;
   badgeDA.className = 'chain-badge active';
 
   const card = document.createElement('div');
-  card.className = 'da-card';
+  card.className = 'da-card' + (isPrism ? ' prism' : '');
   card.innerHTML = `
     <div class="da-label">
       ${escHtml(agentId)}
@@ -532,14 +571,40 @@ function addDA(agentId, txHash, explorerUrl) {
     </div>
     <div class="tx-hash">${escHtml(txHash)}</div>
     <a class="explorer-link" href="${escHtml(explorerUrl)}" target="_blank" rel="noopener">${escHtml(explorerUrl)}</a>
-    <div class="data-root">DA Entry committed on 0G Galileo</div>
+    <div class="data-root">${isPrism ? 'PRISM trade committed on 0G DA' : 'XEON decision committed on 0G DA'}</div>
   `;
   daBody.appendChild(card);
   scrollToBottom(daBody);
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── PRISM panel ───────────────────────────────────────────────────────────────
+function addPrismCycle(data) {
+  if (prismCount === 0) prismEmpty.style.display = 'none';
+  prismCount++;
+  prismCountEl.textContent = prismCount;
+
+  const pnl = data.cycle_pnl_usd;
+  const pnlStr = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(4);
+  document.getElementById('m-prism').textContent = pnlStr;
+  document.getElementById('m-treasury').textContent = '$' + data.treasury_after_usd.toFixed(2);
+
+  const card = document.createElement('div');
+  card.className = 'prism-card';
+  card.innerHTML = `
+    <div class="prism-label">
+      PRISM — Arbitrage Cycle #${data.cycle_number || 1}
+      <span class="confirmed" style="background:rgba(74,222,128,.1);color:var(--green);padding:1px 5px;font-size:7px;letter-spacing:.1em">SELF-FUNDED</span>
+    </div>
+    <div class="prism-row"><span>trades executed</span><span class="val">${data.trades_executed}</span></div>
+    <div class="prism-row"><span>cycle PnL</span><span class="val pos">${pnlStr}</span></div>
+    <div class="prism-row"><span>treasury before</span><span class="val">$${data.treasury_before_usd.toFixed(2)}</span></div>
+    <div class="prism-row"><span>treasury after</span><span class="val pos">$${data.treasury_after_usd.toFixed(2)}</span></div>
+    <div class="prism-row"><span>DA commits</span><span class="val">${data.da_commits || 0}</span></div>
+    <div class="prism-row"><span>pairs</span><span class="val">${(data.trade_pairs || []).join(' · ')}</span></div>
+    <div class="prism-hash"><span class="label">storage_hash  </span>${escHtml(data.storage_hash || '—')}</div>
+  `;
+  prismBody.appendChild(card);
+  scrollToBottom(prismBody);
 }
 
 // ── Line parser ───────────────────────────────────────────────────────────────
@@ -549,49 +614,51 @@ function parseLine(raw) {
   const line = raw.trim();
   if (!line) return;
 
-  // Track which agent context we're in
-  if (line.includes('[XEON]')) pendingAgent = 'XEON';
-  else if (line.includes('[NOVA]')) pendingAgent = 'NOVA';
-  else if (line.includes('[EMBR]')) pendingAgent = 'EMBR';
+  if (line.includes('[XEON]') || line.includes('XEON')) pendingAgent = 'XEON';
+  else if (line.includes('[NOVA]') || line.includes('NOVA')) pendingAgent = 'NOVA';
+  else if (line.includes('[EMBR]') || line.includes('EMBR')) pendingAgent = 'EMBR';
+  else if (line.includes('[ARC]') || line.includes('ARC')) pendingAgent = 'ARC';
+  else if (line.includes('[PRISM]') || line.includes('PRISM')) pendingAgent = 'PRISM';
 
   // Detect storage hash
-  if (line.includes('storage_hash:') || line.includes('stateHash:')) {
-    const match = line.match(/[0-9a-fx]{10,}/i);
+  if (line.includes('storage_hash:') || line.includes('stateHash:') || line.includes('arc_memory:')) {
+    const match = line.match(/0x[0-9a-fA-F]{10,}/);
     if (match) {
       const agent = pendingAgent || 'AGENT';
-      const action = line.includes('stateHash') ? 'write' : 'write';
-      addStorage(agent, match[0], action);
+      const isArc = agent === 'ARC' || line.includes('arc_memory');
+      addStorage(agent, match[0], 'write', isArc);
     }
   }
 
-  // Detect DA commit
+  // Detect ARC rootHash
+  if (line.includes('arc_memory:') || line.includes('rootHash:')) {
+    const match = line.match(/0x[0-9a-fA-F]{10,}/);
+    if (match) addStorage('ARC', match[0], 'memory_entry', true);
+  }
+
+  // Detect DA commit tx
   if (line.includes('da_tx:')) {
     const txMatch = line.match(/0x[0-9a-fA-F]{10,}/);
     if (txMatch) {
       const url = 'https://chainscan-galileo.0g.ai/tx/' + txMatch[0];
-      addDA(pendingAgent || 'XEON', txMatch[0], url);
-      badgeDA.className = 'chain-badge active';
+      const isPrism = pendingAgent === 'PRISM';
+      addDA(pendingAgent || 'XEON', txMatch[0], url, isPrism);
     }
   }
 
-  // Detect verify URL with full hash
+  // Detect verify URL
   if (line.includes('verify:') && line.includes('chainscan')) {
     const urlMatch = line.match(/https?:\/\/\S+/);
-    if (urlMatch && daCount > 0) {
-      // Update last DA card explorer link
+    if (urlMatch) {
       const links = daBody.querySelectorAll('.explorer-link');
       const last = links[links.length - 1];
-      if (last) {
-        last.href = urlMatch[0];
-        last.textContent = urlMatch[0];
-      }
+      if (last) { last.href = urlMatch[0]; last.textContent = urlMatch[0]; }
     }
   }
 
   // Detect compute
   if (line.includes('via_0g_compute:')) {
-    const live = line.includes('true');
-    badgeCompute.className = 'chain-badge' + (live ? ' active' : '');
+    badgeCompute.className = 'chain-badge' + (line.includes('true') ? ' active' : '');
   }
 
   // Done
@@ -599,7 +666,7 @@ function parseLine(raw) {
     setStatus('live');
     runBtn.disabled = false;
     isRunning = false;
-    loadLatest();
+    setTimeout(loadLatest, 800);
   }
 
   addLog(line);
@@ -610,30 +677,76 @@ async function loadLatest() {
   try {
     const res = await fetch('/api/latest');
     const data = await res.json();
-    if (data) {
-      latestArtifact = data;
-      artifactBtn.style.display = '';
+    if (!data) return;
+    latestArtifact = data;
+    artifactBtn.style.display = '';
 
-      // Populate panels from artifact if empty
-      if (storageCount === 0 && data.on_chain && data.on_chain.storage) {
-        const s = data.on_chain.storage;
-        for (const [key, hash] of Object.entries(s)) {
-          if (hash) addStorage(key.split('_')[0].toUpperCase(), hash, key);
-        }
-      }
-      if (daCount === 0 && data.on_chain && data.on_chain.da) {
-        const d = data.on_chain.da;
-        const base = d.explorer_base || 'https://chainscan-galileo.0g.ai/tx/';
-        for (const [key, tx] of Object.entries(d)) {
-          if (tx && key.endsWith('_tx') && tx.startsWith('0x')) {
-            addDA(key.replace('_tx','').toUpperCase(), tx, base + tx);
-          }
-        }
-      }
+    const oc = data.on_chain || {};
+    const s   = oc.storage || {};
+    const arc = oc.arc_memory || {};
+    const da  = oc.da || {};
+    const prism = oc.prism_revenue || null;
+    const compute = oc.compute || {};
 
-      setStatus('live');
+    // Metrics
+    const storageHashes = Object.values(s).filter(v => v && String(v).startsWith('0x'));
+    document.getElementById('m-storage').textContent = storageHashes.length + (arc.entry_count ? '+' + arc.entry_count : '');
+    if (arc.entry_count) document.getElementById('m-arc').textContent = arc.entry_count;
+
+    const allDaTxs = [];
+    if (da.xeon_approve_tx)  allDaTxs.push({agent:'XEON_APPROVE',  tx: da.xeon_approve_tx,  prism:false});
+    if (da.xeon_dispatch_tx) allDaTxs.push({agent:'XEON_DISPATCH', tx: da.xeon_dispatch_tx, prism:false});
+    if (Array.isArray(da.prism_trade_txs)) {
+      da.prism_trade_txs.forEach((tx, i) => allDaTxs.push({agent:`PRISM_TRADE_${i+1}`, tx, prism:true}));
     }
-  } catch (e) {}
+    document.getElementById('m-da').textContent = allDaTxs.length;
+
+    if (prism) {
+      const pnl = prism.cycle_pnl_usd;
+      document.getElementById('m-prism').textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(4);
+      document.getElementById('m-treasury').textContent = '$' + prism.treasury_after_usd.toFixed(2);
+    }
+
+    // Populate storage panel
+    if (storageCount === 0) {
+      for (const [key, hash] of Object.entries(s)) {
+        if (hash && String(hash).startsWith('0x')) {
+          addStorage(key.split('_')[0].toUpperCase(), String(hash), key.replace(/_/g,' '), false);
+        }
+      }
+      if (Array.isArray(arc.root_hashes)) {
+        arc.root_hashes.forEach((hash, i) => {
+          addStorage(`ARC[${i}]`, String(hash), `memory_entry_${i}`, true);
+        });
+      }
+      if (prism && prism.storage_hash) {
+        addStorage('PRISM', prism.storage_hash, 'treasury_state', false);
+      }
+    }
+
+    // Populate DA panel
+    if (daCount === 0 && allDaTxs.length) {
+      const base = da.explorer_base || 'https://chainscan-galileo.0g.ai/tx/';
+      for (const {agent, tx, prism: isPrism} of allDaTxs) {
+        if (tx && tx.startsWith('0x')) addDA(agent, tx, base + tx, isPrism);
+      }
+    }
+
+    // Populate PRISM panel
+    if (prismCount === 0 && prism) {
+      addPrismCycle(prism);
+    }
+
+    // Chain badges
+    if (storageHashes.length > 0) badgeStorage.className = 'chain-badge active';
+    if (arc.entry_count > 0)      badgeArc.className     = 'chain-badge active';
+    if (allDaTxs.length > 0)      badgeDA.className       = 'chain-badge active';
+    if (compute.via_0g_compute)   badgeCompute.className  = 'chain-badge active';
+
+    setStatus('live');
+  } catch (e) {
+    console.error('loadLatest:', e);
+  }
 }
 
 // ── SSE ───────────────────────────────────────────────────────────────────────
@@ -646,7 +759,7 @@ function connectSSE() {
       setStatus('live');
       runBtn.disabled = false;
       isRunning = false;
-      loadLatest();
+      setTimeout(loadLatest, 800);
     } else {
       parseLine(data);
     }
@@ -660,20 +773,26 @@ runBtn.addEventListener('click', async () => {
   runBtn.disabled = true;
   setStatus('running');
 
-  // Reset panels
-  logCount = 0; storageCount = 0; daCount = 0;
-  logCountEl.textContent = '0'; storageCountEl.textContent = '0'; daCountEl.textContent = '0';
-  logBody.innerHTML = ''; storageBody.innerHTML = ''; daBody.innerHTML = '';
-  logEmpty.style.display = ''; storageEmpty.style.display = ''; daEmpty.style.display = '';
+  // Reset
+  logCount = 0; storageCount = 0; daCount = 0; prismCount = 0;
+  logCountEl.textContent = '0'; storageCountEl.textContent = '0';
+  daCountEl.textContent = '0'; prismCountEl.textContent = '0';
+  document.getElementById('m-storage').textContent = '—';
+  document.getElementById('m-arc').textContent = '—';
+  document.getElementById('m-da').textContent = '—';
+  document.getElementById('m-prism').textContent = '—';
+  document.getElementById('m-treasury').textContent = '—';
+  logBody.innerHTML = ''; storageBody.innerHTML = ''; daBody.innerHTML = ''; prismBody.innerHTML = '';
+  logEmpty.style.display = ''; storageEmpty.style.display = ''; daEmpty.style.display = ''; prismEmpty.style.display = '';
   logBody.appendChild(logEmpty);
   storageBody.appendChild(storageEmpty);
   daBody.appendChild(daEmpty);
+  prismBody.appendChild(prismEmpty);
   pendingAgent = null;
 
-  // Connect SSE first
-  connectSSE();
+  [badgeStorage,badgeArc,badgeCompute,badgeDA].forEach(b => b.className = 'chain-badge');
 
-  // Trigger run
+  connectSSE();
   await fetch('/api/run', { method: 'POST' }).catch(() => {});
   addLog('▶ Pipeline started…', 'step');
 });
@@ -681,8 +800,7 @@ runBtn.addEventListener('click', async () => {
 // ── Artifact modal ────────────────────────────────────────────────────────────
 artifactBtn.addEventListener('click', () => {
   if (!latestArtifact) return;
-  const json = JSON.stringify(latestArtifact, null, 2);
-  artifactJson.textContent = json;
+  artifactJson.textContent = JSON.stringify(latestArtifact, null, 2);
   modalOverlay.classList.add('open');
 });
 modalClose.addEventListener('click', () => modalOverlay.classList.remove('open'));

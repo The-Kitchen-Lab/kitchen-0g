@@ -9,8 +9,11 @@
     "test-storage": "npx tsx demo/test-storage.ts",
     "test-compute": "npx tsx demo/test-compute.ts",
     "test-da": "npx tsx demo/test-da.ts",
+    "test-arc": "npx tsx demo/test-arc.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "evidence": "npx tsx demo/generate-evidence.ts",
+    "test-prism": "npx tsx demo/test-prism.ts"
   },
   "dependencies": {
     "@0gfoundation/0g-compute-ts-sdk": "^0.8.2",

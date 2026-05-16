@@ -8,6 +8,62 @@
 
 ---
 
+## Live Testnet Evidence
+
+All transactions are live on 0G Galileo V3. Run `npm run demo` to generate a new set.
+
+### DA Commitments (5 immutable on-chain proofs)
+
+| Action | Transaction |
+|--------|------------|
+| XEON approve | [`0xf18b46ff1ce1a4839a3627d2b125a879576f77fcfc81088fbc8d4dbcdd568a8d`](https://chainscan-galileo.0g.ai/tx/0xf18b46ff1ce1a4839a3627d2b125a879576f77fcfc81088fbc8d4dbcdd568a8d) |
+| XEON dispatch | [`0x957c436670534b5f7f10df327569471aa07302cac6f276a8b91204fef917ad9b`](https://chainscan-galileo.0g.ai/tx/0x957c436670534b5f7f10df327569471aa07302cac6f276a8b91204fef917ad9b) |
+| PRISM trade 1 | [`0x095d7b610422f941ed96cf5504ef813bba616185a9357b76b759fa63336c4d6c`](https://chainscan-galileo.0g.ai/tx/0x095d7b610422f941ed96cf5504ef813bba616185a9357b76b759fa63336c4d6c) |
+| PRISM trade 2 | [`0x94e2f304323078acc7b753dbb6679fff4a56f1a7a6f2d9c8592a38723c6f3cfd`](https://chainscan-galileo.0g.ai/tx/0x94e2f304323078acc7b753dbb6679fff4a56f1a7a6f2d9c8592a38723c6f3cfd) |
+| PRISM trade 3 | [`0x642dfba2abc413c3455ef4cfa44c5d013a5fbc5f6ba647f041ce1225dc8f0429`](https://chainscan-galileo.0g.ai/tx/0x642dfba2abc413c3455ef4cfa44c5d013a5fbc5f6ba647f041ce1225dc8f0429) |
+
+### 0G Storage (5 content-addressed agent states)
+
+| Agent state | Root hash |
+|------------|-----------|
+| XEON approve | `0x56333da868beda2ae766ad14f2ca340cf44e7639b92119798b0a2a19a2041fda` |
+| XEON dispatch | `0xc12b0309887245bee6fb63ab499b9eba69c6c820296d86d28a297838c128cf92` |
+| NOVA inference | `0x0361848480b3f828a54beb36c6289cf66c8307490f7482c3819c98d439233e62` |
+| EMBR content | `0x90f4696ffac060f7b94c2c2f68a690b7ecedd8b6c3ed859b82ab056e4e760970` |
+| PRISM treasury | `0x95f8da3ca369a76737b62ef017a6a4dce4460e0b4407757d510364bd52f26d86` |
+
+### ARC Long-Context Memory (5 entries, session `d34a0059-7322-4522-9aba-57a710ad87d3`)
+
+Full pipeline context — brief → XEON → NOVA → EMBR → PRISM — stored as ordered blobs on 0G Storage. Session reconstructable from any node.
+
+| Entry | Root hash |
+|-------|-----------|
+| brief (user) | `0x21d08f89b1f52a467f109c5368c55728f9e710e7da4aa2e26939ae9bbe5392b5` |
+| XEON decision | `0x73152ac7c8cfc4dafbdf97816073e323186f1bd603e9de53aca8d8276ae96eb8` |
+| NOVA inference | `0xa9ab4dee3bf68f26bd764fcaf13d52e0a122dee51bac98c37ba6679eae75ab39` |
+| EMBR content | `0x22af43c83b850431588a8de62ef14bac232b5dfca16cc0851bf61c9855444dca` |
+| PRISM cycle | `0x1aacdd4e1217de08b693e16d7e7fb77364fdcf40370cfa0a7fe874134bb1268e` |
+
+### PRISM Revenue (self-funded proof)
+
+Seed $100 → Treasury **$100.38** (+$0.38 from 3 autonomous arbitrage cycles). Each trade committed to DA. Full proof: [`submission/EVIDENCE.md`](submission/EVIDENCE.md)
+
+---
+
+## Track Requirements
+
+| Requirement | Status | Implementation |
+|-------------|--------|---------------|
+| Agent framework | ✅ | XEON → NOVA → EMBR → ARC → PRISM pipeline |
+| 0G Storage (state persistence) | ✅ | All 5 agents write state via `@0gfoundation/0g-ts-sdk` |
+| 0G Storage (long-context memory) | ✅ | ARC agent — unbounded session memory on 0G |
+| 0G Compute (inference) | ⚡ | Integration live, stub mode (fund wallet 3 OG to activate) |
+| 0G DA (audit trail) | ✅ | XEON decisions + PRISM trades committed via DAEntrance |
+| Autonomous revenue | ✅ | PRISM self-funds system via on-chain arbitrage |
+| Verifiable on testnet | ✅ | 5 DA tx hashes above, explorer links included |
+
+---
+
 ## What is The Kitchen
 
 The Kitchen is an **autonomous product company**. Not an AI wrapper, not a demo — an actual system that ships products without human sign-offs. Eleven specialized agents run in coordinated loops out of Istanbul:
@@ -96,14 +152,16 @@ Product Brief
 
 ```
 integrations/
-  storage/client.ts     — @0gfoundation/0g-ts-sdk  (Indexer + MemData)
+  storage/client.ts          — @0gfoundation/0g-ts-sdk  (Indexer + MemData)
   compute/nova_inference.ts  — @0gfoundation/0g-compute-ts-sdk
-  da/audit.ts           — ethers.js → DAEntrance contract
+  da/audit.ts                — ethers.js → DAEntrance contract
 
 agents/
-  xeon.ts               — CTO agent (Storage read/write + DA commit)
-  nova.ts               — Inference agent (Compute + Storage write)
-  embr.ts               — Content agent (Storage write)
+  xeon.ts   — CTO agent (Storage read/write + DA commit on every decision)
+  nova.ts   — Inference agent (0G Compute + Storage write)
+  embr.ts   — Content agent (Storage write after draft)
+  arc.ts    — Long-context memory (unbounded session storage on 0G)
+  prism.ts  — Revenue agent (on-chain arbitrage + DA trade proofs)
 ```
 
 ---
@@ -187,7 +245,12 @@ The `dataRoot` is `keccak256({ agent_id, workflow_id, state_hash, timestamp })` 
 https://chainscan-galileo.0g.ai/tx/<txHash>
 ```
 
-**Live DA commit** (from testnet): `0xd0b4dd050e244e254ee656db29219b59487c46c636d94f1fc5e2c2b229959cf3`
+**Live DA commits** (from testnet, 2026-05-14):
+- XEON approve: `0xf18b46ff1ce1a4839a3627d2b125a879576f77fcfc81088fbc8d4dbcdd568a8d`
+- XEON dispatch: `0x957c436670534b5f7f10df327569471aa07302cac6f276a8b91204fef917ad9b`
+- PRISM trade 1: `0x095d7b610422f941ed96cf5504ef813bba616185a9357b76b759fa63336c4d6c`
+- PRISM trade 2: `0x94e2f304323078acc7b753dbb6679fff4a56f1a7a6f2d9c8592a38723c6f3cfd`
+- PRISM trade 3: `0x642dfba2abc413c3455ef4cfa44c5d013a5fbc5f6ba647f041ce1225dc8f0429`
 
 ---
 
