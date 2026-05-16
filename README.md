@@ -4,8 +4,8 @@
 
 | Document | Link |
 |----------|------|
-| 📄 Technical Brief | [Download PDF](https://tmpfiles.org/dl/wmwMAapWfMVp/kitchen-tech-brief-0g.pdf) |
-| 📊 Pitch Deck | [Download PDF](https://tmpfiles.org/dl/wEwuABpLfjC8/kitchen-pitch-0g.pdf) |
+| 📄 Technical Brief | [Download PDF](submission/kitchen-tech-brief-0g.pdf) |
+| 📊 Pitch Deck | [Download PDF](submission/kitchen-pitch-0g.pdf) |
 
 ---
 
