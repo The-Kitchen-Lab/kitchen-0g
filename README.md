@@ -1,5 +1,14 @@
 # The Kitchen × 0G
 
+## Submission Documents
+
+| Document | Link |
+|----------|------|
+| 📄 Technical Brief | [Download PDF](https://tmpfiles.org/dl/wmwMAapWfMVp/kitchen-tech-brief-0g.pdf) |
+| 📊 Pitch Deck | [Download PDF](https://tmpfiles.org/dl/wEwuABpLfjC8/kitchen-pitch-0g.pdf) |
+
+---
+
 > *"We didn't build on 0G because the hackathon asked us to. We built on 0G because an autonomous system that relies on centralized infrastructure isn't truly autonomous."*
 
 ![Track](https://img.shields.io/badge/0G_APAC_Hackathon-Track_1_Agentic_Infrastructure-F5C842?style=flat-square&labelColor=080808)
