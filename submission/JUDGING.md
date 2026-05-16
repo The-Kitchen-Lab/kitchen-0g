@@ -17,10 +17,33 @@ The Kitchen was a running system before this hackathon. This section documents w
 | AI inference (NOVA) | OpenAI API | ✅ Yes |
 | Content generation (EMBR) | Claude API | ✅ Yes |
 | Agent memory / state persistence | Redis (single node) | ✅ Yes — with SPOF |
+| Long-term memory (ARC) | brain-kit — pgvector + BM25 + RRF hybrid search | ✅ Yes |
+| Token optimization | Role-scoped tool subsets + sliding window context | ✅ Yes — −40% measured |
 | Crypto arbitrage (PRISM) | DEXes + prediction markets | ✅ Yes |
 | Owned media distribution (ECHO) | 2× Instagram pages, autonomous | ✅ Yes |
 | Revenue → treasury → reinvestment loop | Internal accounting | ✅ Yes |
+| 3-layer reliability safenet (L1/L2/L3) | Agent self-check → ATLS consolidation → XEON review | ✅ Yes |
 | Decision audit trail | None — logs only, mutable | ❌ No |
+
+### Pre-0G technical architecture (from V03 tech brief)
+
+**Memory layer — brain-kit**
+The Kitchen built and published `@the-kitchen/brain-kit` (npm) before this hackathon. It stores agent memories in PostgreSQL + pgvector and retrieves using a hybrid strategy: dense vector similarity search + BM25 sparse retrieval, merged through Reciprocal Rank Fusion (RRF). Each agent has an isolated memory namespace. On task start, the agent queries its namespace and injects only the top-10 most relevant memories into the prompt — constant token cost regardless of history depth, effective unlimited long-term memory.
+
+**Token optimization — three independent layers**
+1. **Role-scoped tool subsets**: each Claude subprocess spawned with `--allowedTools` limited to what that role uses. At ~50 tokens/tool, full manifest = ~700 tokens/call. Role restriction eliminates 43–64% of that cost per agent.
+2. **Sliding window context**: multi-milestone tasks pass only the last 3 milestone outputs as prior context, not full history. A 5-milestone task: 2,000t → 1,200t (−40%). A 12-milestone task: 4,800t → 1,200t (−75%).
+3. **brain-kit retrieval before file reads**: `TokenBudgetEnforcer` caps injected context at 1,500 tokens, replacing unbounded cold file reads with bounded targeted injection.
+
+Composite measured result: −27% to −42% net token reduction vs unoptimized pipeline.
+
+**Orchestration — no peer-to-peer**
+Agents do not communicate with each other. No shared message bus, no event queue. All coordination flows through ATLS (COO) as the sole task distributor. Agents execute fully in parallel; the only serialization point is ATLS's merge step. This eliminates coordination bottlenecks and multiplies token cost from inter-agent waiting.
+
+**Reliability — 3-layer safenet**
+- L1: Agent self-check on completion — resolves remaining open tasks before closing session
+- L2: ATLS (COO) consolidation — scans all agent queues, re-assigns or resolves gaps
+- L3: XEON (CTO) final review — closes remaining items, logs outcome to Obsidian knowledge base
 
 The system functioned. The autonomy claim was real. But three structural problems existed:
 
